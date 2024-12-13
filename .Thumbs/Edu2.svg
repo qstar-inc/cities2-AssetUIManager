@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="26"
+   height="26"
+   viewBox="0 0 26 26"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="Education_2_Primary_Book.svg"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:current-layer="svg4" />
+  <defs
+     id="defs1">
+    <clipPath
+       id="b">
+      <rect
+         width="26"
+         height="26"
+         id="rect1" />
+    </clipPath>
+  </defs>
+  <path
+     d="m 15.081708,20.801592 3.47095,-2.002019 V 7.7107453 L 11.41762,5.198408 11.172667,5.270638 V 5.6388521 L 8.2340184,6.4655681 7.9576604,6.3517278 7.4473424,6.4655681 Z"
+     fill="#ce8240"
+     id="path4-5"
+     style="fill:#7dce40;fill-opacity:1;stroke-width:0.999997" />
+  <path
+     d="M 7.4355662,6.4451554 V 17.215231 l 7.6461418,3.571444 V 9.255047 Z"
+     fill="#b16728"
+     id="path5"
+     style="fill:#61a32e;fill-opacity:1;stroke-width:0.999997" />
+  <path
+     d="M 8.1468664,6.4121812 C 8.2669874,6.4239582 15.198684,8.950426 15.198684,8.950426 L 17.859406,7.8269411 11.273156,5.4166675 Z"
+     fill="#fff6d9"
+     id="path6"
+     style="stroke-width:0.999997" />
+  <path
+     style="fill:#b5caa5;fill-opacity:1;stroke-width:2;stroke-linejoin:round;paint-order:stroke fill markers"
+     d="m 9.3559336,8.9677395 1.9085914,0.6973695 1.908591,0.697369 c -0.0029,2.736962 0,0 -0.0029,2.736962 L 11.258637,12.206579 9.3471016,11.313718 Z"
+     id="path1"
+     sodipodi:nodetypes="ccccccc" />
+</svg>

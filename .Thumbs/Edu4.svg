@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg11"
+   sodipodi:docname="Education_3_Tertiary_Alt.svg"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview11"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:current-layer="svg11" />
+  <defs
+     id="defs1">
+    <clipPath
+       id="b">
+      <rect
+         width="32"
+         height="32"
+         id="rect1" />
+    </clipPath>
+  </defs>
+  <g
+     id="a"
+     transform="translate(-2.553,-0.06148755)">
+    <path
+       d="m 835.9,106.946 4.421,-2.55 V 90.272 l -9.088,-3.2 -0.312,0.092 v 0.469 l -3.743,1.053 -0.352,-0.145 -0.65,0.145 z"
+       transform="translate(-809.265,-83.032)"
+       fill="#7dce40"
+       id="path1" />
+    <path
+       d="m 826.165,88.29 v 13.718 l 9.739,4.549 V 91.869 Z"
+       transform="translate(-809.269,-82.662)"
+       fill="#61a32e"
+       id="path2" />
+    <path
+       d="m 826.833,88.554 c 0.153,0.015 8.982,3.233 8.982,3.233 l 3.389,-1.431 -8.389,-3.07 z"
+       transform="translate(-809.031,-82.968)"
+       fill="#fff6d9"
+       id="path3" />
+    <path
+       d="m 835.9,106.946 4.421,-2.55 V 90.272 l -9.088,-3.2 -0.312,0.092 v 0.469 l -3.743,1.053 -0.352,-0.145 -0.65,0.145 z"
+       transform="translate(-814.688,-80.422)"
+       fill="#ce8240"
+       id="path4"
+       style="fill:#ce4840;fill-opacity:1" />
+    <path
+       d="m 826.165,88.29 v 13.718 l 9.739,4.549 V 91.869 Z"
+       transform="translate(-814.692,-80.052)"
+       fill="#b16728"
+       id="path5"
+       style="fill:#b12e28;fill-opacity:1" />
+    <path
+       d="m 826.833,88.554 c 0.153,0.015 8.982,3.233 8.982,3.233 l 3.389,-1.431 -8.389,-3.07 z"
+       transform="translate(-814.454,-80.358)"
+       fill="#fff6d9"
+       id="path6" />
+    <path
+       d="m 835.9,106.946 4.421,-2.55 V 90.272 l -9.088,-3.2 -0.312,0.092 v 0.469 l -3.743,1.053 -0.352,-0.145 -0.65,0.145 z"
+       transform="translate(-820.111,-77.812)"
+       fill="#40b1ce"
+       id="path7" />
+    <path
+       d="m 826.165,88.29 v 13.718 l 9.739,4.549 V 91.869 Z"
+       transform="translate(-820.115,-77.441)"
+       fill="#69c8e0"
+       id="path8" />
+    <path
+       d="m 826.833,88.554 c 0.153,0.015 8.982,3.233 8.982,3.233 l 3.389,-1.431 -8.389,-3.07 z"
+       transform="translate(-819.877,-77.748)"
+       fill="#fff6d9"
+       id="path9" />
+  </g>
+</svg>

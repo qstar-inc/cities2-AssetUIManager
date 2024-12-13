@@ -66,9 +66,17 @@ namespace AssetUIShuffler
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool BridgesInRoads { get; set; }
 
+        [SettingsUISection(OptionsTab, OptionsGroup)]
+        public bool ParkingRoadsInRoads { get; set; }
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool SeparatedSchools { get; set; }
+
+        [SettingsUISection(OptionsTab, OptionsGroup)]
+        public bool SeparatedPocketParks { get; set; }
+
+        [SettingsUISection(OptionsTab, OptionsGroup)]
+        public bool SeparatedCityParks { get; set; }
 
         public override void SetDefaults()
         {
@@ -76,7 +84,10 @@ namespace AssetUIShuffler
             PathwayPriorityDropdown = 74;
             PathwayPriorityDropdownVersion = 0;
             BridgesInRoads = true;
+            ParkingRoadsInRoads = true;
             SeparatedSchools = true;
+            SeparatedPocketParks = true;
+            SeparatedCityParks = true;
         }
 
         [SettingsUISection(AboutTab, InfoGroup)]
