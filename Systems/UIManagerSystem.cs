@@ -1,6 +1,7 @@
 ﻿using Colossal.Entities;
 using Colossal.Serialization.Entities;
 using Game.Prefabs;
+using Game.SceneFlow;
 using Game;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +9,16 @@ using System;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
+using Colossal.IO.AssetDatabase;
 
-namespace AssetUIShuffler
+namespace AssetUIManager.Systems
 {
-    public partial class UIShufflerSystem : GameSystemBase
+    public partial class UIManagerSystem : GameSystemBase
     {
         public class AssetMenuData
         {
-            public Dictionary<string, Entity> Menu { get; set; } = [];
-            public Dictionary<string, int> Priority { get; set; } = [];
+            public Dictionary<string, Entity> Menu { get; set; } = new Dictionary<string, Entity>();
+            public Dictionary<string, int> Priority { get; set; } = new Dictionary<string, int>();
         }
         private EntityQuery CreateQuery(ComponentType[] all, ComponentType[] none = null)
         {
@@ -36,19 +38,11 @@ namespace AssetUIShuffler
         private EntityQuery bridgeQuery;
         private EntityQuery educationQuery;
         private EntityQuery parkQuery;
-        public static Dictionary<string, Entity> assetMenuDataDict = [];
-        public static Dictionary<string, Entity> assetCatDataDict = [];
-        public static Dictionary<string, int> roadMenuPriority = [];
-        //public static Dictionary<string, Entity> pedStreetOGmenu = [];
-        //public static Dictionary<string, int> pedStreetOGpriority = [];
-        //public static Dictionary<string, Entity> bridgesOGmenu = [];
-        //public static Dictionary<string, int> bridgesOGpriority = [];
-        //public static Dictionary<string, Entity> parkingRoadOGmenu = [];
-        //public static Dictionary<string, int> parkingRoadOGpriority = [];
-        //public static Dictionary<string, Entity> schoolsOGmenu = [];
-        //public static Dictionary<string, int> schoolsOGpriority = [];
-        //public static Dictionary<string, Entity> parksOGmenu = [];
-        //public static Dictionary<string, int> parksOGpriority = [];
+        //private EntityQuery zoneQuery;
+        private static bool log;
+        public static Dictionary<string, Entity> assetMenuDataDict = new();
+        public static Dictionary<string, Entity> assetCatDataDict = new();
+        public static Dictionary<string, int> roadMenuPriority = new();
         public static AssetMenuData pedStreetAssetMenuData = new();
         public static AssetMenuData bridgesAssetMenuData = new();
         public static AssetMenuData parkingRoadAssetMenuData = new();
@@ -63,25 +57,30 @@ namespace AssetUIShuffler
 
         protected override void OnCreate()
         {
-            
             base.OnCreate();
-
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            uiAssetMenuDataQuery = CreateQuery([ComponentType.ReadWrite<UIAssetMenuData>()]);
-            uiAssetCategoryDataQuery = CreateQuery([ComponentType.ReadWrite<UIAssetCategoryData>()]);
-            roadQuery = CreateQuery([ComponentType.ReadWrite<RoadData>()], [ComponentType.ReadWrite<BridgeData>()]);
-            bridgeQuery = CreateQuery([ComponentType.ReadWrite<BridgeData>()]);
-            educationQuery = CreateQuery([ComponentType.ReadWrite<SchoolData>()]);
-            parkQuery = CreateQuery([ComponentType.ReadWrite<ParkData>()], [ComponentType.ReadWrite<ServiceUpgradeData>()]);
+            uiAssetMenuDataQuery = CreateQuery(new[] { ComponentType.ReadWrite<UIAssetMenuData>() });
+            uiAssetCategoryDataQuery = CreateQuery(new[] { ComponentType.ReadWrite<UIAssetCategoryData>() });
+            roadQuery = CreateQuery(new[] { ComponentType.ReadWrite<RoadData>() }, new[] { ComponentType.ReadWrite<BridgeData>() });
+            bridgeQuery = CreateQuery(new[] { ComponentType.ReadWrite<BridgeData>(), ComponentType.ReadWrite<RoadData>() }, new[] { ComponentType.ReadWrite<TrackData>() });
+            educationQuery = CreateQuery(new[] { ComponentType.ReadWrite<SchoolData>() });
+            parkQuery = CreateQuery(new[] { ComponentType.ReadWrite<ParkData>() }, new[] { ComponentType.ReadWrite<ServiceUpgradeData>() });
+            //zoneQuery = CreateQuery(new[] { ComponentType.ReadWrite<ZoneData>() });
+            GameManager.instance.RegisterUpdater(() => CollectData());
+        }
 
+        public void CollectData()
+        {
             try
             {
                 var entities = uiAssetMenuDataQuery.ToEntityArray(Allocator.Temp);
                 foreach (Entity entity in entities)
                 {
                     string prefabName = prefabSystem.GetPrefabName(entity);
-                    assetMenuDataDict.Add(prefabName, entity);
-
+                    if (!assetMenuDataDict.ContainsKey(prefabName))
+                    {
+                        assetMenuDataDict.Add(prefabName, entity);
+                    }
                     if (prefabName == "Roads")
                     {
                         DynamicBuffer<UIGroupElement> assetMenuBuffer = EntityManager.GetBuffer<UIGroupElement>(entity);
@@ -92,7 +91,11 @@ namespace AssetUIShuffler
                             var name = prefabSystem.GetPrefabName(uge);
                             prefabSystem.TryGetPrefab(uge, out PrefabBase prefabBase);
                             prefabBase.TryGet(out UIObject ubj);
-                            roadMenuPriority.Add(name, ubj.m_Priority);
+                            if (!roadMenuPriority.ContainsKey(name))
+                            {
+                                roadMenuPriority.Add(name, ubj.m_Priority);
+                            }
+                            if (log) Mod.log.Info($"Adding {name} to roadMenuPriority as {ubj.m_Priority}");
                         }
                     }
                 }
@@ -101,14 +104,18 @@ namespace AssetUIShuffler
             {
                 Mod.log.Error(e);
             }
-
+            
             try
             {
                 var entities = uiAssetCategoryDataQuery.ToEntityArray(Allocator.Temp);
                 foreach (Entity entity in entities)
                 {
                     string prefabName = prefabSystem.GetPrefabName(entity);
-                    assetCatDataDict.Add(prefabName, entity);
+                    if (!assetCatDataDict.ContainsKey(prefabName))
+                    {
+                        assetCatDataDict.Add(prefabName, entity);
+                    }
+                    if (log) Mod.log.Info($"Adding {prefabName} to assetCatDataDict");
                 }
             }
             catch (Exception e)
@@ -120,20 +127,24 @@ namespace AssetUIShuffler
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
+            Mod.m_Setting.PathwayPriorityDropdownVersion++;
             RefreshUI();
+            //No();
         }
 
         public void RefreshUI()
         {
+            CollectData();
+            log = Mod.m_Setting.VerboseLogging;
             try {
                 TogglePathway(Mod.m_Setting.PathwayInRoads, Mod.m_Setting.PathwayPriorityDropdown);
                 ToggleSchool(Mod.m_Setting.SeparatedSchools);
-                ProcessMovingAssets(Mod.m_Setting.BridgesInRoads, "StarQ_RoadsBridges", "Roads", "Media/Game/Icons/CableStayed.svg", 65, "", bridgeQuery, bridgesAssetMenuData, "component", ["Hydroelectric_Power_Plant_01 Dam"]);
-                ProcessMovingAssets(Mod.m_Setting.ParkingRoadsInRoads, "StarQ_RoadsParkingRoads", "Roads", "Media/Game/Icons/TwolanePerpendicularparkingRoad.svg", 74, "Parking Lane", roadQuery, parksAssetMenuData, "lane", ["Alley Oneway"]);
-                ProcessMovingAssets(Mod.m_Setting.SeparatedPocketParks, "StarQ_PocketParks", "Parks & Recreation", "coui://starq-asset-ui-shuffler/PocketParks.svg", 5, "", parkQuery, parksAssetMenuData, "component", [], "PocketPark", "startsWith");
-                ProcessMovingAssets(Mod.m_Setting.SeparatedCityParks, "StarQ_CityParks", "Parks & Recreation", "Media/Game/Icons/PropsPark.svg", 6, "", parkQuery, parksAssetMenuData, "component", [], "CityPark", "startsWith");
+                ProcessMovingAssets(Mod.m_Setting.BridgesInRoads, "StarQ_RoadsBridges", "Roads", "Media/Game/Icons/CableStayed.svg", 65, "", bridgeQuery, bridgesAssetMenuData, "component", new[] { "Hydroelectric_Power_Plant_01 Dam" });
+                ProcessMovingAssets(Mod.m_Setting.ParkingRoadsInRoads, "StarQ_RoadsParkingRoads", "Roads", "Media/Game/Icons/TwolanePerpendicularparkingRoad.svg", 74, "Parking Lane", roadQuery, parksAssetMenuData, "lane", new[] { "Alley Oneway" });
+                ProcessMovingAssets(Mod.m_Setting.SeparatedPocketParks, "StarQ_PocketParks", "Parks & Recreation", "coui://starq-asset-ui-manager/PocketParks.svg", 5, "", parkQuery, parksAssetMenuData, "component", Array.Empty<string>(), "PocketPark", "startsWith");
+                ProcessMovingAssets(Mod.m_Setting.SeparatedCityParks, "StarQ_CityParks", "Parks & Recreation", "Media/Game/Icons/PropsPark.svg", 6, "", parkQuery, parksAssetMenuData, "component", Array.Empty<string>(), "CityPark", "startsWith");
             } catch (Exception ex) { Mod.log.Error(ex); }
-            Mod.log.Info("Refresh Complete!");
+            if (log) Mod.log.Info("Refresh Complete!");
         }
 
         public void TogglePathway(bool yes, int priority)
@@ -160,9 +171,10 @@ namespace AssetUIShuffler
                     RefreshBuffer(oldCat.m_Menu, newCat.m_Menu, "Pathways", itemValue);
 
                     uiObj.m_Priority = priority;
+                    if (log) Mod.log.Info($"Moving Pathways to {Neighbor} at {priority}");
 
                     oldCat.m_Menu = newCat.m_Menu;
-                    EntityManager.SetComponentData(itemValue, oldCat);
+                    EntityManager.SetComponentData(itemValue, newCat);
                     EntityManager.SetComponentData(itemValue, uiObj);
 
                     bool pedInPath = Mod.m_Setting.PedestrianInPathway;
@@ -170,7 +182,7 @@ namespace AssetUIShuffler
                     {
                         pedInPath = false;
                     }
-                    ProcessMovingAssets(pedInPath, "Pathways", "", "", 0, "Pedestrian Section", roadQuery, pedStreetAssetMenuData, "lane", []);
+                    ProcessMovingAssets(pedInPath, "Pathways", "", "", 0, "Pedestrian Section", roadQuery, pedStreetAssetMenuData, "lane", Array.Empty<string>());
                 }
             }
             catch (Exception e)
@@ -184,10 +196,10 @@ namespace AssetUIShuffler
 
             if (yes)
             {
-                Entity edu1Tab = CreateUIAssetCategoryPrefab("StarQ_Schools", "Education & Research", "coui://starq-asset-ui-shuffler/Edu1.svg", 1);
-                Entity edu2Tab = CreateUIAssetCategoryPrefab("StarQ_HighSchools", "Education & Research", "coui://starq-asset-ui-shuffler/Edu2.svg", 2);
-                Entity edu3Tab = CreateUIAssetCategoryPrefab("StarQ_Colleges", "Education & Research", "coui://starq-asset-ui-shuffler/Edu3.svg", 3);
-                Entity edu4Tab = CreateUIAssetCategoryPrefab("StarQ_Universities", "Education & Research", "coui://starq-asset-ui-shuffler/Edu4.svg", 4);
+                Entity edu1Tab = CreateUIAssetCategoryPrefab("StarQ_Schools", "Education & Research", "coui://starq-asset-ui-manager/Edu1.svg", 1);
+                Entity edu2Tab = CreateUIAssetCategoryPrefab("StarQ_HighSchools", "Education & Research", "coui://starq-asset-ui-manager/Edu2.svg", 2);
+                Entity edu3Tab = CreateUIAssetCategoryPrefab("StarQ_Colleges", "Education & Research", "coui://starq-asset-ui-manager/Edu3.svg", 3);
+                Entity edu4Tab = CreateUIAssetCategoryPrefab("StarQ_Universities", "Education & Research", "coui://starq-asset-ui-manager/Edu4.svg", 4);
 
                 try
                 {
@@ -197,15 +209,8 @@ namespace AssetUIShuffler
                     {
                         var name = prefabSystem.GetPrefabName(entity);
 
-                        EntityManager.TryGetComponent(entity, out PrefabData assetPrefabData);
-                        prefabSystem.TryGetPrefab(assetPrefabData, out PrefabBase assetPrefabBase);
-                        prefabSystem.TryGetComponentData(assetPrefabBase, out UIObjectData uiObj);
-                        prefabSystem.TryGetComponentData(assetPrefabBase, out SchoolData schoolData);
-
-                        if (uiObj.m_Group != educationCat)
-                        {
+                        if (!EntityManager.TryGetComponent(entity, out PrefabData assetPrefabData) || !prefabSystem.TryGetPrefab(assetPrefabData, out PrefabBase assetPrefabBase) || !prefabSystem.TryGetComponentData(assetPrefabBase, out UIObjectData uiObj) || uiObj.m_Group != educationCat || !prefabSystem.TryGetComponentData(assetPrefabBase, out SchoolData schoolData))
                             continue;
-                        }
 
                         if (!schoolsAssetMenuData.Menu.ContainsKey(name))
                         {
@@ -214,6 +219,7 @@ namespace AssetUIShuffler
                         }
 
                         Entity eduTab = uiObj.m_Group;
+                        //Entity eduAp = Entity.Null;
 
                         if (schoolData.m_EducationLevel == 1)
                         {
@@ -299,84 +305,20 @@ namespace AssetUIShuffler
                         if (!prefabSystem.TryGetComponentData(assetPrefabBase, out UIObjectData assetUIObject))
                             continue;
 
-                        {
-                            bool isValid = false;
+                        bool isValid = false;
 
-                            if (processType == "lane")
-                            {
-                                DynamicBuffer<NetGeometrySection> x = EntityManager.GetBuffer<NetGeometrySection>(entity);
-                                foreach (NetGeometrySection item in x)
-                                {
-                                    try
-                                    {
-                                        string laneName = prefabSystem.GetPrefabName(item.m_Section);
-                                        if (laneName.Contains(sectionName))
-                                        {
-                                            isValid = true;
-                                            break;
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Mod.log.Error(e);
-                                    }
-                                }
-                            }
-                            else if (processType == "component")
+                        if (processType == "lane")
+                        {
+                            DynamicBuffer<NetGeometrySection> x = EntityManager.GetBuffer<NetGeometrySection>(entity);
+                            foreach (NetGeometrySection item in x)
                             {
                                 try
                                 {
-                                    if (includePattern == null || includeType == null)
+                                    string laneName = prefabSystem.GetPrefabName(item.m_Section);
+                                    if (laneName.Contains(sectionName))
                                     {
                                         isValid = true;
-                                    }
-                                    else if (includePattern != null && includeType != null)
-                                    {
-                                        string prefabName = prefabSystem.GetPrefabName(entity);
-                                        if (includeType == "startsWith" && prefabName.StartsWith(includePattern))
-                                        {
-                                            isValid = true;
-                                        }
-                                        else if (includeType == "endsWith" && prefabName.EndsWith(includePattern))
-                                        {
-                                            isValid = true;
-                                        }
-                                        else if (includeType == "contains" && prefabName.Contains(includePattern))
-                                        {
-                                            isValid = true;
-                                        }
-                                        if (includePattern == "PocketPark" && prefabSystem.TryGetComponentData(assetPrefabBase, out BuildingData buildingData) && (buildingData.m_LotSize.x == 1 || buildingData.m_LotSize.y == 1))
-                                        {    
-                                            isValid = true;      
-                                        }
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    Mod.log.Error(e);
-                                }
-                            }
-
-                            if (isValid)
-                            {
-                                try
-                                {
-                                    Entity currentGroup = assetUIObject.m_Group;
-                                    int currentPriority = assetUIObject.m_Priority;
-                                    if (!assetMenuData.Menu.ContainsKey(name))
-                                    {
-                                        assetMenuData.Menu.Add(name, currentGroup);
-                                        assetMenuData.Priority.Add(name, currentPriority);
-                                    }
-
-                                    RefreshBuffer(currentGroup, tab, name, entity);
-
-                                    if (EntityManager.TryGetComponent(currentGroup, out PrefabData assetMenuPrefabData) && prefabSystem.TryGetPrefab(assetMenuPrefabData, out PrefabBase assetMenuPrefabBase) && prefabSystem.TryGetComponentData(assetMenuPrefabBase, out UIObjectData assetMenuUIObj))
-                                    {
-                                        int newPriority = (assetMenuUIObj.m_Priority * 1000) + currentPriority;
-                                        currentPriority = newPriority;
-                                        currentGroup = tab;
-                                        EntityManager.SetComponentData(entity, assetUIObject);
+                                        break;
                                     }
                                 }
                                 catch (Exception e)
@@ -385,6 +327,68 @@ namespace AssetUIShuffler
                                 }
                             }
                         }
+                        else if (processType == "component")
+                        {
+                            try
+                            {
+                                if (includePattern == null || includeType == null)
+                                {
+                                    isValid = true;
+                                }
+                                else if (includePattern != null && includeType != null)
+                                {
+                                    string prefabName = prefabSystem.GetPrefabName(entity);
+                                    if (includeType == "startsWith" && prefabName.StartsWith(includePattern))
+                                    {
+                                        isValid = true;
+                                    }
+                                    else if (includeType == "endsWith" && prefabName.EndsWith(includePattern))
+                                    {
+                                        isValid = true;
+                                    }
+                                    else if (includeType == "contains" && prefabName.Contains(includePattern))
+                                    {
+                                        isValid = true;
+                                    }
+                                    if (includePattern == "PocketPark" && prefabSystem.TryGetComponentData(assetPrefabBase, out BuildingData buildingData) && (buildingData.m_LotSize.x == 1 || buildingData.m_LotSize.y == 1))
+                                    {    
+                                        isValid = true;      
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Mod.log.Error(e);
+                            }
+                        }
+
+                        if (isValid)
+                        {
+                            try
+                            {
+                                Entity currentTab = assetUIObject.m_Group;
+                                int currentPriority = assetUIObject.m_Priority;
+                                if (!assetMenuData.Menu.ContainsKey(name))
+                                {
+                                    assetMenuData.Menu.Add(name, currentTab);
+                                    assetMenuData.Priority.Add(name, currentPriority);
+                                }
+
+                                if (EntityManager.TryGetComponent(currentTab, out PrefabData currentTabPrefabData) && prefabSystem.TryGetPrefab(currentTabPrefabData, out PrefabBase currentTabPrefabBase) && prefabSystem.TryGetComponentData(currentTabPrefabBase, out UIObjectData currentTabUIObject))
+                                {
+                                    RefreshBuffer(currentTab, tab, name, entity);
+                                    int newPriority = (currentTabUIObject.m_Priority * 1000) + currentPriority;
+                                    assetUIObject.m_Priority = newPriority;
+                                    assetUIObject.m_Group = tab;
+                                    EntityManager.SetComponentData(entity, assetUIObject);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Mod.log.Error(e);
+                            }
+                        }
+                        
                     }
                 }
                 catch (Exception e)
@@ -483,24 +487,71 @@ namespace AssetUIShuffler
         {
             DynamicBuffer<UIGroupElement> uiGroupElementbuffer = EntityManager.GetBuffer<UIGroupElement>(oldCat);
 
+            var itemName = prefabSystem.GetPrefabName(moverEntity);
             for (int i = 0; i < uiGroupElementbuffer.Length; i++)
             {
                 var uge = uiGroupElementbuffer[i].m_Prefab;
-                var name = prefabSystem.GetPrefabName(uge);
-                if (name == moverName)
+                var tabName = prefabSystem.GetPrefabName(uge);
+                if (tabName == moverName)
                 {
                     uiGroupElementbuffer.RemoveAt(i);
+                    if (log) Mod.log.Info($"Removing {itemName} from {tabName}");
                     break;
                 }
             }
 
+            var tabNameNew = prefabSystem.GetPrefabName(newCat);
             EntityManager.GetBuffer<UIGroupElement>(newCat).Add(new UIGroupElement(moverEntity));
             EntityManager.GetBuffer<UnlockRequirement>(newCat).Add(new UnlockRequirement(moverEntity, UnlockFlags.RequireAny));
+            if (log) Mod.log.Info($"Adding {itemName} to {tabNameNew}");
         }
 
-        protected override void OnUpdate()
-        {
-            
-        }
+        protected override void OnUpdate() {}
+
+        //public void No()
+        //{
+        //    var entities = zoneQuery.ToEntityArray(Allocator.Temp);
+
+        //    Mod.log.Info($"---------------");
+        //    foreach (Entity entity in entities)
+        //    {
+        //        string prefabName = prefabSystem.GetPrefabName(entity);
+        //        //Mod.log.Info($"{prefabName}");
+        //        if (EntityManager.TryGetComponent(entity, out PrefabData prefabData))
+        //        {
+        //            if (prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase))
+        //            {
+        //                List<ComponentBase> comps = prefabBase.components;
+        //                var ZoneProperties = (Game.Prefabs.ZoneProperties)(comps.FirstOrDefault(c => c.name == "ZoneProperties"));
+        //                if (ZoneProperties != null)
+        //                {
+        //                    //Mod.log.Info(ZoneProperties.m_ResidentialProperties);
+        //                    //Mod.log.Info(ZoneProperties.m_SpaceMultiplier);
+        //                    //Mod.log.Info(ZoneProperties.m_ResidentialProperties / ZoneProperties.m_SpaceMultiplier);
+        //                    if (ZoneProperties.m_ResidentialProperties > 0)
+        //                    {
+        //                        if (!ZoneProperties.m_ScaleResidentials)
+        //                        {
+        //                            Mod.log.Info($"{prefabName} is Low Density Residential");
+        //                            continue;
+        //                        }
+        //                        if (ZoneProperties.m_ResidentialProperties / ZoneProperties.m_SpaceMultiplier < 1f)
+        //                        {
+
+        //                            Mod.log.Info($"{prefabName} is Medium Density Residential");
+        //                            continue;
+        //                        }
+        //                        else
+        //                        {
+        //                            Mod.log.Info($"{prefabName} is High Density Residential");
+        //                            continue;
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    Mod.log.Info($"---------------");
+        //}
     }
 }

@@ -1,4 +1,5 @@
-﻿using Colossal.IO.AssetDatabase;
+﻿using AssetUIManager.Systems;
+using Colossal.IO.AssetDatabase;
 using Game.Modding;
 using Game.Settings;
 using Game.UI.Widgets;
@@ -8,15 +9,16 @@ using System;
 using Unity.Entities;
 using UnityEngine.Device;
 
-namespace AssetUIShuffler
+namespace AssetUIManager
 {
-    [FileLocation("ModsSettings\\StarQ\\"+nameof(AssetUIShuffler))]
+    [FileLocation("ModsSettings\\StarQ\\"+nameof(AssetUIManager))]
     [SettingsUITabOrder(OptionsTab, AboutTab)]
     [SettingsUIGroupOrder(ButtonGroup, OptionsGroup, InfoGroup)]
     //[SettingsUIShowGroupName(OptionsGroup)]
-    public class Setting(IMod mod) : ModSetting(mod)
+    public class Setting : ModSetting
     {
-        private static readonly UIShufflerSystem uiO = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIShufflerSystem>();
+        private static readonly UIManagerSystem uiO = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
+        private static readonly AssetPackSystem apS = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
 
         public const string OptionsTab = "Options";
         public const string ButtonGroup = "Save Changes";
@@ -25,58 +27,76 @@ namespace AssetUIShuffler
         public const string AboutTab = "About";
         public const string InfoGroup = "Info";
 
+        public Setting(IMod mod) : base(mod)
+        {
+        }
+
         [SettingsUISection(OptionsTab, ButtonGroup)]
-        public bool Button { set { uiO.RefreshUI(); } }
+        public bool Button
+        {
+            set
+            {
+                if (!PathwayInRoads) PedestrianInPathway = false;
+                uiO.RefreshUI();
+                apS.RefreshUI();
+            }
+        }
+
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
-        public bool PathwayInRoads { get; set; }
+        public bool PathwayInRoads { get; set; } = true;
 
         [SettingsUIDisableByCondition(typeof(Setting), nameof(PathwayInRoads), true)]
         [SettingsUISection(OptionsTab, OptionsGroup)]
-        public bool PedestrianInPathway { get; set; }
+        public bool PedestrianInPathway { get; set; } = true;
 
         [SettingsUIHidden]
-        public int PathwayPriorityDropdownVersion { get; set; }
+        public int PathwayPriorityDropdownVersion { get; set; } = 0;
 
-        [SettingsUIDisableByCondition(typeof(Setting), nameof(PathwayInRoads), true)]
+        //[SettingsUIDisableByCondition(typeof(Setting), nameof(PathwayInRoads), true)]
         [SettingsUIDropdown(typeof(Setting), nameof(GetPathwayPriorityDropdownItems))]
         [SettingsUIValueVersion(typeof(Setting), nameof(PathwayPriorityDropdownVersion))]
         [SettingsUISection(OptionsTab, OptionsGroup)]
-        public int PathwayPriorityDropdown { get; set; }
+        public int PathwayPriorityDropdown { get; set; } = 74;
 
         public DropdownItem<int>[] GetPathwayPriorityDropdownItems()
         {
             var items = new List<DropdownItem<int>>();
-
             foreach (var item in uiO.GetRoadMenuPriority())
             {
-                string input = item.Key;
+                
+                string input = item.Key; Mod.log.Info(input);
                 string withoutPrefix = Regex.Replace(input, @"^(Roads)+", "");
                 string result = Regex.Replace(withoutPrefix, @"(?<!^)([A-Z])", " $1");
                 items.Add(new DropdownItem<int>()
                 {
                     value = item.Value+1,
-
                     displayName = $"After {result}",
                 });
             }
-            return [.. items];
+            return items.ToArray();
         }
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
-        public bool BridgesInRoads { get; set; }
+        public bool BridgesInRoads { get; set; } = true;
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
-        public bool ParkingRoadsInRoads { get; set; }
+        public bool ParkingRoadsInRoads { get; set; } = true;
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
-        public bool SeparatedSchools { get; set; }
+        public bool SeparatedSchools { get; set; } = true;
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
-        public bool SeparatedPocketParks { get; set; }
+        public bool SeparatedPocketParks { get; set; } = true;
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
-        public bool SeparatedCityParks { get; set; }
+        public bool SeparatedCityParks { get; set; } = true;
+
+        [SettingsUISection(OptionsTab, OptionsGroup)]
+        public bool EnableAssetPacks { get; set; } = true;
+
+        [SettingsUISection(OptionsTab, InfoGroup)]
+        public bool VerboseLogging { get; set; } = false;
 
         public override void SetDefaults()
         {
@@ -88,6 +108,8 @@ namespace AssetUIShuffler
             SeparatedSchools = true;
             SeparatedPocketParks = true;
             SeparatedCityParks = true;
+            EnableAssetPacks = true;
+            VerboseLogging = false;
         }
 
         [SettingsUISection(AboutTab, InfoGroup)]

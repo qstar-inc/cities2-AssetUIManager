@@ -4,10 +4,10 @@
 		<OutputType>Library</OutputType>
 		<TargetFramework>net472</TargetFramework>
 		<Configurations>Debug;Release</Configurations>
-		<LangVersion>12</LangVersion>
-		<AssemblyName>AssetUIShuffler</AssemblyName>
-		<Title>Asset UI Shuffler</Title>
-		<Version>1.0.1</Version>
+		<LangVersion>9</LangVersion>
+		<AssemblyName>AssetUIManager</AssemblyName>
+		<Title>Asset UI Manager</Title>
+		<Version>1.0.5</Version>
 		
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>

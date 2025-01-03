@@ -1,33 +1,65 @@
 ﻿<Publish>
 	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-	<ModId Value="" />
+	<ModId Value="98560" />
 	<!--Name of the mod to display to players-->
-	<DisplayName Value="UIOrganizer" />
+	<DisplayName Value="Asset UI Manager" />
 	<!--Short description of the mod-->
-	<ShortDescription Value="This is a short description" />
+	<ShortDescription Value="Move/split/add various assets in the asset UI in an orderly manner." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="This is a long description" /-->
 	<LongDescription>
-This is a long description
+# Asset UI Manager
+Tired of scrolling the asset UI clogged with so many assets? Can't find the specific asset depo you're looking for? Then this is the second best option after Find It.
+
+Asset UI Manager can reposition elements in the ... Asset UI.
+## Features
+* Move the Pathway tabs to the Roads menu instead of Terraforming.
+* Move all Pedestrian Streets to the Pathway tab.
+* Move all Bridges to a new tab in the Roads Menu.
+* Move all Parking Roads to a new tab in the Roads Menu.
+* Move all Schools to new tabs according to the Education Level.
+* Move all \"Pocket Parks\" to new tabs in the Parks &amp; Recreation menu.
+* Move all \"City Parks\" to new tabs in the Parks &amp; Recreation menu.
+* Add Asset Pack: Transport Depots.
+* Add Asset Pack: Public Transport.
+* Add Asset Pack: Cargo Transport.
+* Add Asset Pack: Transport Lane.
+(All **options** are __optional__ can be enabled and disabled on the fly. Disabling Asset Packs might require reloading the save.)
+
+## Future Plans
+* Add props/assets to the menu which are not available in vanilla.
+
+## Credits
+* irasponsible for feedback, testing and the Education icons.
+* Konsi/Mimonsi, GamingNerdLeith for feedback and testing.
+* Everyone else who participated in the beta testing of the mod in [Cities Skylines Modding](https://discord.com/channels/1024242828114673724/1315403052953505964) server.
+
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="" />
+	<Screenshot Value="Properties/Screenshot01.jpg" />
+	<Screenshot Value="Properties/Screenshot02.jpg" />
+	<Screenshot Value="Properties/Screenshot03.jpg" />
+	<Screenshot Value="Properties/Screenshot04.jpg" />
+	<Screenshot Value="Properties/Screenshot05.jpg" />
 	<!--Tag, can be set multiple times-->
-	<Tag Value="" />
+	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.0" />
+	<ModVersion Value="1.1.0" />
 	<!--Recommended version of the base game to use the mod-->
-	<GameVersion Value="1.0.*" />
+	<GameVersion Value="1.2.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog Value="" />
-	<!--ChangeLog>
-	</ChangeLog-->
+	<!--ChangeLog Value="" /-->
+	<ChangeLog>
+* Initial Release.
+	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
-	<ExternalLink Type="" Url="" />
+	<ExternalLink Type="discord" Url="https://discord.com/channels/1024242828114673724/1324716071311114351" />
+	<ExternalLink Type="github" Url="https://github.com/qstar-inc/cities2-AssetUIManager" />
+	<ExternalLink Type="buymeacoffee" Url="https://buymeacoffee.com/starq" />
 </Publish>

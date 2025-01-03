@@ -1,13 +1,16 @@
-﻿using System.Collections.Generic;
-using Colossal;
-using Game.Settings;
-using Game.UI.Widgets;
+﻿using Colossal;
+using System.Collections.Generic;
 
-namespace AssetUIShuffler
+namespace AssetUIManager
 {
-    public class LocaleEN(Setting setting) : IDictionarySource
+    public class LocaleEN : IDictionarySource
     {
-        private readonly Setting m_Setting = setting;
+        private readonly Setting m_Setting;
+
+        public LocaleEN(Setting setting)
+        {
+            m_Setting = setting;
+        }
 
         public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors, Dictionary<string, int> indexCounts)
         {
@@ -43,9 +46,15 @@ namespace AssetUIShuffler
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedSchools)), $"Move all Schools to new tabs according to the Education Level." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SeparatedPocketParks)), "Separated Pocket Park Tabs" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedPocketParks)), $"Move all \"Pocket Parks\" to new tabs in the Parks & Recreatoion menu." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedPocketParks)), $"Move all \"Pocket Parks\" to new tabs in the Parks & Recreation menu." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SeparatedCityParks)), "Separated City Park Tabs" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedCityParks)), $"Move all \"City Parks\" to new tabs in the Parks & Recreatoion menu." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedCityParks)), $"Move all \"City Parks\" to new tabs in the Parks & Recreation menu." },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableAssetPacks)), "Asset Packs" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableAssetPacks)), $"Add asset packs for the following types of assets:\r\n- Transport Depot\r\n- Public Transport\r\n- Cargo Transport\r\n- Transport Lane\r\nRequires reloading into the save for disabling." },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VerboseLogging)), "Verbose Logging" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.VerboseLogging)), $"Enable detailed logging for troubleshooting." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod Name" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.NameText)), "" },
@@ -57,24 +66,32 @@ namespace AssetUIShuffler
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.BMaCLink)), "Support the author." },
 
                 { "SubServices.NAME[StarQ_RoadsBridges]", "Bridges" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_RoadsBridges]", "Build bridges, whichever you like. //Subject to change" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_RoadsBridges]", "Roads that span across gaps, crossing waterways or valleys seamlessly." },
                 { "SubServices.NAME[StarQ_RoadsParkingRoads]", "Parking Roads" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_RoadsParkingRoads]", "Build parking roads, whichever you like. //Subject to change" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_RoadsParkingRoads]", "Specialized roads with integrated parking spaces." },
 
-                { "SubServices.NAME[StarQ_Schools]", "Schools" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Schools]", "Build primary/elementary schools, whichever you like. //Subject to change" },
+                { "SubServices.NAME[StarQ_Schools]", "Elementary Schools" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Schools]", "Basic education facilities for younger citizens." },
                 { "SubServices.NAME[StarQ_HighSchools]", "High Schools" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_HighSchools]", "Build high schools, whichever you like. //Subject to change" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_HighSchools]", "Secondary schools preparing teens for \"Educated\" status." },
                 { "SubServices.NAME[StarQ_Colleges]", "Colleges" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Colleges]", "Build colleges, whichever you like. //Subject to change" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Colleges]", "Mid-level education institutions focused on practical and theoretical learning for \"Well Educated\" status." },
                 { "SubServices.NAME[StarQ_Universities]", "Universities" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Universities]", "Build universities, whichever you like. //Subject to change" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Universities]", "Advanced educational establishments providing graduate-level courses for \"Highly Educated\" status." },
 
                 { "SubServices.NAME[StarQ_PocketParks]", "Pocket Parks" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_PocketParks]", "Build pocket parks, whichever you like. //Subject to change" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_PocketParks]", "Small, compact spaces designed to enhance local neighborhood aesthetics and minimum recreation." },
                 { "SubServices.NAME[StarQ_CityParks]", "City Parks" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_CityParks]", "Build city parks, whichever you like. //Subject to change" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_CityParks]", "Recreational areas promoting relaxation, leisure activities, and community events." },
 
+                { "Assets.NAME[StarQ_TransportDepot]", "Transport Depot" },
+                { "Assets.DESCRIPTION[StarQ_TransportDepot]","Transport Depot" },
+                { "Assets.NAME[StarQ_PublicTransport]", "Public Transport" },
+                { "Assets.DESCRIPTION[StarQ_PublicTransport]","Public Transport" },
+                { "Assets.NAME[StarQ_CargoTransport]", "Cargo Transport" },
+                { "Assets.DESCRIPTION[StarQ_CargoTransport]","Cargo Transport" },
+                { "Assets.NAME[StarQ_TransportLane]", "Transport Lane" },
+                { "Assets.DESCRIPTION[StarQ_TransportLane]","Transport Lane" },
             };
         }
 
