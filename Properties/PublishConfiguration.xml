@@ -17,13 +17,12 @@ Asset UI Manager can reposition elements in the ... Asset UI.
 * Move all Pedestrian Streets to the Pathway tab.
 * Move all Bridges to a new tab in the Roads Menu.
 * Move all Parking Roads to a new tab in the Roads Menu.
+* Move all Hospitals to new tabs according to its function.
 * Move all Schools to new tabs according to the Education Level.
+* Move all Polices to new tabs according to its function.
 * Move all \"Pocket Parks\" to new tabs in the Parks &amp; Recreation menu.
 * Move all \"City Parks\" to new tabs in the Parks &amp; Recreation menu.
-* Add Asset Pack: Transport Depots.
-* Add Asset Pack: Public Transport.
-* Add Asset Pack: Cargo Transport.
-* Add Asset Pack: Transport Lane.
+* Add Asset Pack: Transport Depots, Transport Stops, Cargo Transport, Transport Lane.
 (All **options** are __optional__ can be enabled and disabled on the fly. Disabling Asset Packs might require reloading the save.)
 
 ## Future Plans
@@ -48,7 +47,7 @@ Asset UI Manager can reposition elements in the ... Asset UI.
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.1.0" />
+	<ModVersion Value="1.1.2" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.2.*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -56,7 +55,9 @@ Asset UI Manager can reposition elements in the ... Asset UI.
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<!--ChangeLog Value="" /-->
 	<ChangeLog>
-* Initial Release.
+- Recompiled for 1.2.5f1.
+- Separated Hospitals (disabled by default since icons aren't yet added)
+- Separated Polices (disabled by default since icons aren't yet added)
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
 	<ExternalLink Type="discord" Url="https://discord.com/channels/1024242828114673724/1324716071311114351" />

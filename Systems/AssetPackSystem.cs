@@ -12,7 +12,7 @@ namespace AssetUIManager.Systems
 {
     public partial class AssetPackSystem : GameSystemBase
     {
-        private EntityQuery CreateQuery(ComponentType[] all, ComponentType[] none = null)
+        private EntityQuery CreateQuery(ComponentType[] all, ComponentType[]? none = null)
         {
             if (none != null)
             {
@@ -24,7 +24,7 @@ namespace AssetUIManager.Systems
             }
         }
 
-        private PrefabSystem prefabSystem;
+        private PrefabSystem? prefabSystem;
         private EntityQuery transportDepot;
         private EntityQuery publicTransportStation;
         private EntityQuery publicTransportStop;
@@ -290,7 +290,7 @@ namespace AssetUIManager.Systems
             if (!prefabSystem.TryGetPrefab(new PrefabID("AssetPackPrefab", name), out PrefabBase assetPack))
             {
                 AssetPackPrefab assetPackPrefab = ScriptableObject.CreateInstance<AssetPackPrefab>();
-                assetPackPrefab.name = $"StarQ_{name}";
+                assetPackPrefab.name = $"StarQ_AP {name}";
                 var MenuUI = assetPackPrefab.AddComponent<UIObject>();
                 MenuUI.m_Icon = icon;
                 MenuUI.m_Priority = priority++;

@@ -8,10 +8,11 @@ using System.Text.RegularExpressions;
 using System;
 using Unity.Entities;
 using UnityEngine.Device;
+using Colossal.Json;
 
 namespace AssetUIManager
 {
-    [FileLocation("ModsSettings\\StarQ\\"+nameof(AssetUIManager))]
+    [FileLocation("ModsSettings\\StarQ\\" + nameof(AssetUIManager))]
     [SettingsUITabOrder(OptionsTab, AboutTab)]
     [SettingsUIGroupOrder(ButtonGroup, OptionsGroup, InfoGroup)]
     //[SettingsUIShowGroupName(OptionsGroup)]
@@ -29,6 +30,7 @@ namespace AssetUIManager
 
         public Setting(IMod mod) : base(mod)
         {
+            SetDefaults();
         }
 
         [SettingsUISection(OptionsTab, ButtonGroup)]
@@ -54,6 +56,7 @@ namespace AssetUIManager
         public int PathwayPriorityDropdownVersion { get; set; } = 0;
 
         //[SettingsUIDisableByCondition(typeof(Setting), nameof(PathwayInRoads), true)]
+        [Exclude]
         [SettingsUIDropdown(typeof(Setting), nameof(GetPathwayPriorityDropdownItems))]
         [SettingsUIValueVersion(typeof(Setting), nameof(PathwayPriorityDropdownVersion))]
         [SettingsUISection(OptionsTab, OptionsGroup)]
@@ -62,15 +65,25 @@ namespace AssetUIManager
         public DropdownItem<int>[] GetPathwayPriorityDropdownItems()
         {
             var items = new List<DropdownItem<int>>();
+            bool firstDone = false;
             foreach (var item in uiO.GetRoadMenuPriority())
             {
-                
-                string input = item.Key; Mod.log.Info(input);
-                string withoutPrefix = Regex.Replace(input, @"^(Roads)+", "");
+
+                string input = item.Key;
+                string withoutPrefix = Regex.Replace(input.Replace("StarQ_UIC",""), @"^(Roads)+", "");
                 string result = Regex.Replace(withoutPrefix, @"(?<!^)([A-Z])", " $1");
+                if (!firstDone)
+                {
+                    items.Add(new DropdownItem<int>()
+                    {
+                        value = item.Value - 1,
+                        displayName = $"Before {result}",
+                    });
+                    firstDone = true;
+                }
                 items.Add(new DropdownItem<int>()
                 {
-                    value = item.Value+1,
+                    value = item.Value + 1,
                     displayName = $"After {result}",
                 });
             }
@@ -84,7 +97,16 @@ namespace AssetUIManager
         public bool ParkingRoadsInRoads { get; set; } = true;
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
+        public bool SeparatedHospitals { get; set; } = false;
+
+        [SettingsUISection(OptionsTab, OptionsGroup)]
+        public bool SeparateControlAndResearch { get; set; } = false;
+
+        [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool SeparatedSchools { get; set; } = true;
+
+        [SettingsUISection(OptionsTab, OptionsGroup)]
+        public bool SeparatedPolice { get; set; } = false;
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool SeparatedPocketParks { get; set; } = true;
@@ -105,7 +127,10 @@ namespace AssetUIManager
             PathwayPriorityDropdownVersion = 0;
             BridgesInRoads = true;
             ParkingRoadsInRoads = true;
+            SeparatedHospitals = false;
+            SeparateControlAndResearch = false;
             SeparatedSchools = true;
+            SeparatedPolice = false;
             SeparatedPocketParks = true;
             SeparatedCityParks = true;
             EnableAssetPacks = true;
@@ -116,7 +141,12 @@ namespace AssetUIManager
         public string NameText => Mod.Name;
 
         [SettingsUISection(AboutTab, InfoGroup)]
-        public string VersionText => Mod.Version;
+        public string VersionText =>
+#if DEBUG
+            $"{Mod.Version} - DEV";
+#else
+            Mod.Name;
+#endif
 
         [SettingsUISection(AboutTab, InfoGroup)]
         public string AuthorText => "StarQ";

@@ -1,5 +1,6 @@
 ﻿using Colossal;
 using System.Collections.Generic;
+using static Game.Prefabs.CharacterGroup;
 
 namespace AssetUIManager
 {
@@ -42,8 +43,17 @@ namespace AssetUIManager
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ParkingRoadsInRoads)), "Separate Parking Roads Tab In Roads Menu" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ParkingRoadsInRoads)), $"Move all Parking Roads to a new tab in the Roads Menu." },
 
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SeparatedHospitals)), "Separated Hospital Tabs" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedHospitals)), $"Move all Hospitals to new tabs according to its function.\r\n- [BETA] Icons to be updated later." },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SeparateControlAndResearch)), "Separated Disease Control and Health Research Tabs" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparateControlAndResearch)), $"Move Disease Control Centers and Health Research Institutes to own new tabs." },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SeparatedSchools)), "Separated Education Tabs" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedSchools)), $"Move all Schools to new tabs according to the Education Level." },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SeparatedPolice)), "Separated Police/Prison Tabs" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedPolice)), $"Move all Police buildings to new tabs according to its function.\r\n- [BETA] Icons to be updated later." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SeparatedPocketParks)), "Separated Pocket Park Tabs" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.SeparatedPocketParks)), $"Move all \"Pocket Parks\" to new tabs in the Parks & Recreation menu." },
@@ -65,33 +75,57 @@ namespace AssetUIManager
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BMaCLink)), "Buy Me a Coffee" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.BMaCLink)), "Support the author." },
 
-                { "SubServices.NAME[StarQ_RoadsBridges]", "Bridges" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_RoadsBridges]", "Roads that span across gaps, crossing waterways or valleys seamlessly." },
-                { "SubServices.NAME[StarQ_RoadsParkingRoads]", "Parking Roads" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_RoadsParkingRoads]", "Specialized roads with integrated parking spaces." },
+                { "SubServices.NAME[StarQ_UIC RoadsBridges]", "Bridges" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC RoadsBridges]", "Roads that span across gaps, crossing waterways or valleys seamlessly." },
+                { "SubServices.NAME[StarQ_UIC RoadsParkingRoads]", "Parking Roads" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC RoadsParkingRoads]", "Specialized roads with integrated parking spaces." },
 
-                { "SubServices.NAME[StarQ_Schools]", "Elementary Schools" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Schools]", "Basic education facilities for younger citizens." },
-                { "SubServices.NAME[StarQ_HighSchools]", "High Schools" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_HighSchools]", "Secondary schools preparing teens for \"Educated\" status." },
-                { "SubServices.NAME[StarQ_Colleges]", "Colleges" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Colleges]", "Mid-level education institutions focused on practical and theoretical learning for \"Well Educated\" status." },
-                { "SubServices.NAME[StarQ_Universities]", "Universities" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_Universities]", "Advanced educational establishments providing graduate-level courses for \"Highly Educated\" status." },
+//StarQ_UIC Clinics", "Health & Deathcare", "Media/Game/Icons/Healthcare.svg", 1);
+//                Entity hospitalTab = CreateUIAssetCategoryPrefab("StarQ_UIC Hospital", "Health & Deathcare", "coui://starq-asset-ui-manager/Hospital.svg", 2);
+//                Entity diseaseTab = CreateUIAssetCategoryPrefab("StarQ_UIC DiseaseControl", "Health & Deathcare", "coui://starq-asset-ui-manager/DiseaseControl.svg", 3);
+//                Entity researchTab = CreateUIAssetCategoryPrefab("StarQ_UIC HealthResearch
 
-                { "SubServices.NAME[StarQ_PocketParks]", "Pocket Parks" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_PocketParks]", "Small, compact spaces designed to enhance local neighborhood aesthetics and minimum recreation." },
-                { "SubServices.NAME[StarQ_CityParks]", "City Parks" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_CityParks]", "Recreational areas promoting relaxation, leisure activities, and community events." },
 
-                { "Assets.NAME[StarQ_TransportDepot]", "Transport Depot" },
-                { "Assets.DESCRIPTION[StarQ_TransportDepot]","Transport Depot" },
-                { "Assets.NAME[StarQ_PublicTransport]", "Public Transport" },
-                { "Assets.DESCRIPTION[StarQ_PublicTransport]","Public Transport" },
-                { "Assets.NAME[StarQ_CargoTransport]", "Cargo Transport" },
-                { "Assets.DESCRIPTION[StarQ_CargoTransport]","Cargo Transport" },
-                { "Assets.NAME[StarQ_TransportLane]", "Transport Lane" },
-                { "Assets.DESCRIPTION[StarQ_TransportLane]","Transport Lane" },
+                { "SubServices.NAME[StarQ_UIC Clinics]", "Medical Clinics" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC Clinics]", "Small healthcare facilities that provide basic medical services, treating minor illnesses and injuries to keep citizens healthy." },
+                { "SubServices.NAME[StarQ_UIC Hospitals]", "Hospitals" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC Hospitals]", "Large medical centers equipped to handle emergencies, surgeries, and specialized treatments, ensuring comprehensive healthcare for the city." },
+                { "SubServices.NAME[StarQ_UIC DiseaseControl]", "Disease Control Centers" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC DiseaseControl]", "Specialized facilities focused on monitoring, preventing, and responding to outbreaks, keeping the population safe from widespread diseases." },
+                { "SubServices.NAME[StarQ_UIC HealthResearch]", "Health Research Centers" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC HealthResearch]", "Advanced institutions dedicated to medical research and innovation, developing new treatments and improving overall healthcare in the city." },
+
+                { "SubServices.NAME[StarQ_UIC Schools]", "Elementary Schools" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC Schools]", "The first step in a child's education, elementary schools provide basic learning and help build the foundation for future studies." },
+                { "SubServices.NAME[StarQ_UIC HighSchools]", "High Schools" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC HighSchools]", "High schools offer a more advanced curriculum, preparing students for higher education or direct entry into the workforce." },
+                { "SubServices.NAME[StarQ_UIC Colleges]", "Colleges" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC Colleges]", "Colleges provide specialized education and training, equipping students with the skills needed for various careers and industries." },
+                { "SubServices.NAME[StarQ_UIC Universities]", "Universities" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC Universities]", "Universities are the pinnacle of education, offering a wide range of advanced degrees and research opportunities to shape the city's future professionals." },
+
+                { "SubServices.NAME[StarQ_UIC LocalPolice]", "Local Police Departments" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC LocalPolice]", "Local police stations serve as the backbone of law enforcement, responding to crimes, patrolling neighborhoods, and ensuring public safety in their districts." },
+                { "SubServices.NAME[StarQ_UIC PoliceHQ]", "Police Headquarters" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC PoliceHQ]", "The central hubs for law enforcement operations, coordinating citywide crime prevention." },
+                { "SubServices.NAME[StarQ_UIC Intelligence]", "Intelligence Services" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC Intelligence]", "The covert agencies focused on gathering intelligence and preventing crime before they escalate." },
+                { "SubServices.NAME[StarQ_UIC Prison]", "Prisons" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC Prison]", "Secure facilities where convicted criminals serve their sentences, ensuring public safety by keeping dangerous offenders off the streets." },
+
+                { "SubServices.NAME[StarQ_UIC PocketParks]", "Pocket Parks" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC PocketParks]", "Small, compact spaces designed to enhance local neighborhood aesthetics and minimum recreation." },
+                { "SubServices.NAME[StarQ_UIC CityParks]", "City Parks" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[StarQ_UIC CityParks]", "Recreational areas promoting relaxation, leisure activities, and community events." },
+
+                { "Assets.NAME[StarQ_AP TransportDepot]", "Transport Depot" },
+                { "Assets.DESCRIPTION[StarQ_AP TransportDepot]","Transport Depot" },
+                { "Assets.NAME[StarQ_AP PublicTransport]", "Transport Stops" },
+                { "Assets.DESCRIPTION[StarQ_AP PublicTransport]","Transport Stops" },
+                { "Assets.NAME[StarQ_AP CargoTransport]", "Cargo Transport" },
+                { "Assets.DESCRIPTION[StarQ_AP CargoTransport]","Cargo Transport" },
+                { "Assets.NAME[StarQ_AP TransportLane]", "Transport Lane" },
+                { "Assets.DESCRIPTION[StarQ_AP TransportLane]","Transport Lane" },
             };
         }
 

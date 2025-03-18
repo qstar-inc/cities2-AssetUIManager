@@ -13,7 +13,7 @@ namespace AssetUIManager
     public class Mod : IMod
     {
         public static string Name = "Asset UI Manager";
-        public static string Version = "1.1.0";
+        public static string Version = "1.1.2";
         public static string Author = "StarQ";
         public static string uiHostName = "starq-asset-ui-manager";
 
@@ -30,10 +30,13 @@ namespace AssetUIManager
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
-            UIManager.defaultUISystem.AddHostLocation(uiHostName, Path.Combine(Path.GetDirectoryName(asset.path), ".Thumbs"), false);
+            UIManager.defaultUISystem.AddHostLocation(uiHostName, Path.Combine(Path.GetDirectoryName(asset.path), "Resources"), false);
             AssetDatabase.global.LoadSettings(nameof(AssetUIManager), m_Setting, new Setting(this));
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
+#if DEBUG
+            m_Setting.VerboseLogging = true;
+#endif
         }
 
         public void OnDispose()
@@ -41,7 +44,6 @@ namespace AssetUIManager
             //log.Info(nameof(OnDispose));
             if (m_Setting != null)
             {
-                m_Setting.PathwayPriorityDropdownVersion = 0;
                 m_Setting.UnregisterInOptionsUI();
                 m_Setting = null;
             }

@@ -7,7 +7,8 @@
 		<LangVersion>9</LangVersion>
 		<AssemblyName>AssetUIManager</AssemblyName>
 		<Title>Asset UI Manager</Title>
-		<Version>1.0.5</Version>
+		<Version>1.1.2</Version>
+		<Authors>StarQ</Authors>
 		
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
@@ -78,9 +79,9 @@
 
 	<Target Name="GetCustomAssetsFiles" AfterTargets="DeployWIP">
 		<ItemGroup>
-			<AdditionalFilesToDeploy Include=".Thumbs\**\*.*" />
+			<AdditionalFilesToDeploy Include="Resources\**\*.*" />
 		</ItemGroup>
-		<Copy SourceFiles="@(AdditionalFilesToDeploy)" DestinationFiles="@(AdditionalFilesToDeploy->'$(DeployDir)\.Thumbs\%(RecursiveDir)%(Filename)%(Extension)')" />
+		<Copy SourceFiles="@(AdditionalFilesToDeploy)" DestinationFiles="@(AdditionalFilesToDeploy->'$(DeployDir)\Resources\%(RecursiveDir)%(Filename)%(Extension)')" />
 	</Target>
 	
 </Project>
