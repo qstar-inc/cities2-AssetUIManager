@@ -1,14 +1,14 @@
-﻿using AssetUIManager.Systems;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using AssetUIManager.Systems;
 using Colossal.IO.AssetDatabase;
+using Colossal.Json;
 using Game.Modding;
 using Game.Settings;
 using Game.UI.Widgets;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System;
 using Unity.Entities;
 using UnityEngine.Device;
-using Colossal.Json;
 
 namespace AssetUIManager
 {
@@ -18,8 +18,10 @@ namespace AssetUIManager
     //[SettingsUIShowGroupName(OptionsGroup)]
     public class Setting : ModSetting
     {
-        private static readonly UIManagerSystem uiO = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
-        private static readonly AssetPackSystem apS = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
+        private static readonly UIManagerSystem uiO =
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
+        private static readonly AssetPackSystem apS =
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
 
         public const string OptionsTab = "Options";
         public const string ButtonGroup = "Save Changes";
@@ -28,22 +30,25 @@ namespace AssetUIManager
         public const string AboutTab = "About";
         public const string InfoGroup = "Info";
 
-        public Setting(IMod mod) : base(mod)
+        public Setting(IMod mod)
+            : base(mod)
         {
             SetDefaults();
+        }
+
+        public void ApplyChanges()
+        {
+            if (!PathwayInRoads)
+                PedestrianInPathway = false;
+            uiO.RefreshUI();
+            apS.RefreshUI();
         }
 
         [SettingsUISection(OptionsTab, ButtonGroup)]
         public bool Button
         {
-            set
-            {
-                if (!PathwayInRoads) PedestrianInPathway = false;
-                uiO.RefreshUI();
-                apS.RefreshUI();
-            }
+            set { ApplyChanges(); }
         }
-
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool PathwayInRoads { get; set; } = true;
@@ -61,34 +66,6 @@ namespace AssetUIManager
         [SettingsUIValueVersion(typeof(Setting), nameof(PathwayPriorityDropdownVersion))]
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public int PathwayPriorityDropdown { get; set; } = 74;
-
-        public DropdownItem<int>[] GetPathwayPriorityDropdownItems()
-        {
-            var items = new List<DropdownItem<int>>();
-            bool firstDone = false;
-            foreach (var item in uiO.GetRoadMenuPriority())
-            {
-
-                string input = item.Key;
-                string withoutPrefix = Regex.Replace(input.Replace("StarQ_UIC",""), @"^(Roads)+", "");
-                string result = Regex.Replace(withoutPrefix, @"(?<!^)([A-Z])", " $1");
-                if (!firstDone)
-                {
-                    items.Add(new DropdownItem<int>()
-                    {
-                        value = item.Value - 1,
-                        displayName = $"Before {result}",
-                    });
-                    firstDone = true;
-                }
-                items.Add(new DropdownItem<int>()
-                {
-                    value = item.Value + 1,
-                    displayName = $"After {result}",
-                });
-            }
-            return items.ToArray();
-        }
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool BridgesInRoads { get; set; } = true;
@@ -122,6 +99,7 @@ namespace AssetUIManager
 
         public override void SetDefaults()
         {
+            VerboseLogging = false;
             PathwayInRoads = true;
             PathwayPriorityDropdown = 74;
             PathwayPriorityDropdownVersion = 0;
@@ -134,7 +112,41 @@ namespace AssetUIManager
             SeparatedPocketParks = true;
             SeparatedCityParks = true;
             EnableAssetPacks = true;
-            VerboseLogging = false;
+        }
+
+        public DropdownItem<int>[] GetPathwayPriorityDropdownItems()
+        {
+            var items = new List<DropdownItem<int>>();
+            bool firstDone = false;
+            foreach (var item in uiO.GetRoadMenuPriority())
+            {
+                string input = item.Key;
+                string withoutPrefix = Regex.Replace(
+                    input.Replace("StarQ_UIC", ""),
+                    @"^(Roads)+",
+                    ""
+                );
+                string result = Regex.Replace(withoutPrefix, @"(?<!^)([A-Z])", " $1");
+                if (!firstDone)
+                {
+                    items.Add(
+                        new DropdownItem<int>()
+                        {
+                            value = item.Value - 1,
+                            displayName = $"Before {result}",
+                        }
+                    );
+                    firstDone = true;
+                }
+                items.Add(
+                    new DropdownItem<int>()
+                    {
+                        value = item.Value + 1,
+                        displayName = $"After {result}",
+                    }
+                );
+            }
+            return items.ToArray();
         }
 
         [SettingsUISection(AboutTab, InfoGroup)]
@@ -145,11 +157,11 @@ namespace AssetUIManager
 #if DEBUG
             $"{Mod.Version} - DEV";
 #else
-            Mod.Name;
+            Mod.Version;
 #endif
 
         [SettingsUISection(AboutTab, InfoGroup)]
-        public string AuthorText => "StarQ";
+        public string AuthorText => Mod.Author;
 
         [SettingsUIButtonGroup("Social")]
         [SettingsUIButton]

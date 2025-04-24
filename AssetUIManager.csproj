@@ -6,8 +6,8 @@
 		<Configurations>Debug;Release</Configurations>
 		<LangVersion>9</LangVersion>
 		<AssemblyName>AssetUIManager</AssemblyName>
-		<Title>Asset UI Manager</Title>
-		<Version>1.1.2</Version>
+		<AssemblyTitle>Asset UI Manager</AssemblyTitle>
+		<Version>1.1.3</Version>
 		<Authors>StarQ</Authors>
 		
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
@@ -70,6 +70,10 @@
 		<Reference Update="System.Data">
 			<Private>false</Private>
 		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Lib.Harmony" Version="2.2.2" />
 	</ItemGroup>
 
 	<ItemGroup>

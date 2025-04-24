@@ -1,9 +1,9 @@
-﻿using Colossal.Entities;
-using Colossal.Serialization.Entities;
-using Game.Prefabs;
-using Game;
+﻿using System;
 using System.Collections.Generic;
-using System;
+using Colossal.Entities;
+using Colossal.Serialization.Entities;
+using Game;
+using Game.Prefabs;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -24,13 +24,15 @@ namespace AssetUIManager.Systems
             }
         }
 
-        private PrefabSystem? prefabSystem;
+#nullable disable
+        private PrefabSystem prefabSystem;
         private EntityQuery transportDepot;
         private EntityQuery publicTransportStation;
         private EntityQuery publicTransportStop;
         private EntityQuery publicTransportNetwork;
         private EntityQuery cargoTransportStation;
         private EntityQuery lineTool;
+#nullable enable
         private static bool log;
         private static int priority = 1750;
         public static Dictionary<string, Entity> assetPacks = new();
@@ -39,19 +41,63 @@ namespace AssetUIManager.Systems
         {
             base.OnCreate();
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            transportDepot = CreateQuery(new[] { ComponentType.ReadWrite<TransportDepotData>(), ComponentType.ReadWrite<BuildingData>(), ComponentType.ReadWrite<UIObjectData>() }, new[] { ComponentType.ReadOnly<ServiceUpgradeData>() });
-            publicTransportStation = CreateQuery(new[] { ComponentType.ReadWrite<PublicTransportStationData>(), ComponentType.ReadWrite<BuildingData>(), ComponentType.ReadWrite<UIObjectData>() }, new[] { ComponentType.ReadOnly<ServiceUpgradeData>() });
-            publicTransportStop = CreateQuery(new[] { ComponentType.ReadWrite<TransportStopData>(), ComponentType.ReadWrite<UIObjectData>() }, new[] { ComponentType.ReadOnly<ServiceUpgradeData>() });
-            publicTransportNetwork = GetEntityQuery(new EntityQueryDesc() { Any = new[] { ComponentType.ReadWrite<RoadData>(), ComponentType.ReadWrite<TrackData>(), ComponentType.ReadWrite<UIObjectData>() } });
+            transportDepot = CreateQuery(
+                new[]
+                {
+                    ComponentType.ReadWrite<TransportDepotData>(),
+                    ComponentType.ReadWrite<BuildingData>(),
+                    ComponentType.ReadWrite<UIObjectData>(),
+                },
+                new[] { ComponentType.ReadOnly<ServiceUpgradeData>() }
+            );
+            publicTransportStation = CreateQuery(
+                new[]
+                {
+                    ComponentType.ReadWrite<PublicTransportStationData>(),
+                    ComponentType.ReadWrite<BuildingData>(),
+                    ComponentType.ReadWrite<UIObjectData>(),
+                },
+                new[] { ComponentType.ReadOnly<ServiceUpgradeData>() }
+            );
+            publicTransportStop = CreateQuery(
+                new[]
+                {
+                    ComponentType.ReadWrite<TransportStopData>(),
+                    ComponentType.ReadWrite<UIObjectData>(),
+                },
+                new[] { ComponentType.ReadOnly<ServiceUpgradeData>() }
+            );
+            publicTransportNetwork = GetEntityQuery(
+                new EntityQueryDesc()
+                {
+                    Any = new[]
+                    {
+                        ComponentType.ReadWrite<RoadData>(),
+                        ComponentType.ReadWrite<TrackData>(),
+                        ComponentType.ReadWrite<UIObjectData>(),
+                    },
+                }
+            );
             lineTool = CreateQuery(new[] { ComponentType.ReadWrite<TransportLineData>() });
-            cargoTransportStation = CreateQuery(new[] { ComponentType.ReadWrite<CargoTransportStationData>(), ComponentType.ReadWrite<BuildingData>(), ComponentType.ReadWrite<UIObjectData>() }, new[] { ComponentType.ReadOnly<ServiceUpgradeData>() });
+            cargoTransportStation = CreateQuery(
+                new[]
+                {
+                    ComponentType.ReadWrite<CargoTransportStationData>(),
+                    ComponentType.ReadWrite<BuildingData>(),
+                    ComponentType.ReadWrite<UIObjectData>(),
+                },
+                new[] { ComponentType.ReadOnly<ServiceUpgradeData>() }
+            );
             CreateAssetPacksInBulk();
         }
 
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
-            RefreshUI();
+            if (GameModeExtensions.IsGameOrEditor(mode))
+            {
+                RefreshUI();
+            }
         }
 
         public void CreateAssetPacksInBulk()
@@ -64,18 +110,42 @@ namespace AssetUIManager.Systems
 
         public void RefreshUI()
         {
+            if (Mod.m_Setting == null)
+            {
+                return;
+            }
             log = Mod.m_Setting.VerboseLogging;
             try
             {
                 AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "TransportDepot", transportDepot);
-                AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "PublicTransport", publicTransportStation);
-                AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "PublicTransport", publicTransportStop);
-                AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "CargoTransport", cargoTransportStation);
+                AddAssetPacks(
+                    Mod.m_Setting.EnableAssetPacks,
+                    "PublicTransport",
+                    publicTransportStation
+                );
+                AddAssetPacks(
+                    Mod.m_Setting.EnableAssetPacks,
+                    "PublicTransport",
+                    publicTransportStop
+                );
+                AddAssetPacks(
+                    Mod.m_Setting.EnableAssetPacks,
+                    "CargoTransport",
+                    cargoTransportStation
+                );
                 AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "TransportLane", lineTool);
-                AddAssetPacksToNetwork(Mod.m_Setting.EnableAssetPacks, "TransportLane", publicTransportNetwork);
+                AddAssetPacksToNetwork(
+                    Mod.m_Setting.EnableAssetPacks,
+                    "TransportLane",
+                    publicTransportNetwork
+                );
             }
-            catch (Exception ex) { Mod.log.Error(ex); }
-            if (log) Mod.log.Info("Refresh Complete!");
+            catch (Exception ex)
+            {
+                Mod.log.Error(ex);
+            }
+            if (log)
+                Mod.log.Info("Refresh Complete!");
         }
 
         public void AddAssetPacks(bool yes, string packName, EntityQuery entityQuery)
@@ -93,27 +163,42 @@ namespace AssetUIManager.Systems
                     var entities = entityQuery.ToEntityArray(Allocator.Temp);
                     foreach (Entity entity in entities)
                     {
-                        if (EntityManager.TryGetComponent(entity, out UIObjectData uiObj) && uiObj.m_Group == null)
+                        if (
+                            EntityManager.TryGetComponent(entity, out UIObjectData uiObj)
+                            && uiObj.m_Group == null
+                        )
                         {
                             continue;
                         }
 
-                        AssetPackElement app = new()
-                        {
-                            m_Pack = apEntity
-                        };
+                        AssetPackElement app = new() { m_Pack = apEntity };
 
-                        if (!EntityManager.TryGetBuffer(entity, false, out DynamicBuffer<AssetPackElement> apEBuffer))
+                        if (
+                            !EntityManager.TryGetBuffer(
+                                entity,
+                                false,
+                                out DynamicBuffer<AssetPackElement> apEBuffer
+                            )
+                        )
                         {
                             apEBuffer = EntityManager.AddBuffer<AssetPackElement>(entity);
                         }
                         string entityName = prefabSystem.GetPrefabName(entity);
                         apEBuffer.Add(app);
-                        if (log) Mod.log.Info($"Adding {entityName} to {packName}");
+                        if (log)
+                            Mod.log.Info($"Adding {entityName} to {packName}");
 
                         if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
                         {
-                            try { Mod.log.Info($"Has {apd}"); } catch (Exception ex) { Mod.log.Info(entity.GetType().Name); Mod.log.Info(ex); }
+                            try
+                            {
+                                Mod.log.Info($"Has {apd}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Mod.log.Info(entity.GetType().Name);
+                                Mod.log.Info(ex);
+                            }
                         }
 
                         EntityManager.TryGetComponent(apEntity, out PrefabData apData);
@@ -139,12 +224,23 @@ namespace AssetUIManager.Systems
                     var entities = entityQuery.ToEntityArray(Allocator.Temp);
                     foreach (Entity entity in entities)
                     {
-                        if (!prefabSystem.TryGetPrefab(new PrefabID("AssetPackPrefab", packName), out PrefabBase packPrefab))
+                        if (
+                            !prefabSystem.TryGetPrefab(
+                                new PrefabID("AssetPackPrefab", packName),
+                                out PrefabBase packPrefab
+                            )
+                        )
                         {
                             continue;
                         }
 
-                        if (!EntityManager.TryGetBuffer(entity, false, out DynamicBuffer<AssetPackElement> apBuffer))
+                        if (
+                            !EntityManager.TryGetBuffer(
+                                entity,
+                                false,
+                                out DynamicBuffer<AssetPackElement> apBuffer
+                            )
+                        )
                         {
                             continue;
                         }
@@ -157,7 +253,8 @@ namespace AssetUIManager.Systems
                             if (packInAsset == packName)
                             {
                                 apBuffer.RemoveAt(i);
-                                if (log) Mod.log.Info($"Removing {entityName} from {packName}");
+                                if (log)
+                                    Mod.log.Info($"Removing {entityName} from {packName}");
                                 break;
                             }
                         }
@@ -185,12 +282,21 @@ namespace AssetUIManager.Systems
                     var entities = entityQuery.ToEntityArray(Allocator.Temp);
                     foreach (Entity entity in entities)
                     {
-                        if (EntityManager.TryGetComponent(entity, out UIObjectData uiObj) && uiObj.m_Group == null)
+                        if (
+                            EntityManager.TryGetComponent(entity, out UIObjectData uiObj)
+                            && uiObj.m_Group == null
+                        )
                         {
                             continue;
                         }
 
-                        if (!EntityManager.TryGetBuffer(entity, false, out DynamicBuffer<NetGeometrySection> ngsBuffer))
+                        if (
+                            !EntityManager.TryGetBuffer(
+                                entity,
+                                false,
+                                out DynamicBuffer<NetGeometrySection> ngsBuffer
+                            )
+                        )
                         {
                             continue;
                         }
@@ -200,7 +306,10 @@ namespace AssetUIManager.Systems
                         foreach (NetGeometrySection ngs in ngsBuffer)
                         {
                             string ngsName = prefabSystem.GetPrefabName(ngs.m_Section);
-                            if (!ngsName.StartsWith("Public Transport") && !ngsName.Contains("Track"))
+                            if (
+                                !ngsName.StartsWith("Public Transport")
+                                && !ngsName.Contains("Track")
+                            )
                             {
                                 continue;
                             }
@@ -212,23 +321,35 @@ namespace AssetUIManager.Systems
                         {
                             continue;
                         }
-                        AssetPackElement app = new()
-                        {
-                            m_Pack = apEntity
-                        };
+                        AssetPackElement app = new() { m_Pack = apEntity };
 
-                        if (!EntityManager.TryGetBuffer(entity, false, out DynamicBuffer<AssetPackElement> apBuffer))
+                        if (
+                            !EntityManager.TryGetBuffer(
+                                entity,
+                                false,
+                                out DynamicBuffer<AssetPackElement> apBuffer
+                            )
+                        )
                         {
                             apBuffer = EntityManager.AddBuffer<AssetPackElement>(entity);
                         }
                         string entityName = prefabSystem.GetPrefabName(entity);
                         apBuffer.Add(app);
 
-                        if (log) Mod.log.Info($"Adding {entityName} to {packName}");
+                        if (log)
+                            Mod.log.Info($"Adding {entityName} to {packName}");
 
                         if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
                         {
-                            try { Mod.log.Info($"Has {apd}"); } catch (Exception ex) { Mod.log.Info(entity.GetType().Name); Mod.log.Info(ex); }
+                            try
+                            {
+                                Mod.log.Info($"Has {apd}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Mod.log.Info(entity.GetType().Name);
+                                Mod.log.Info(ex);
+                            }
                         }
 
                         EntityManager.TryGetComponent(apEntity, out PrefabData apData);
@@ -254,12 +375,23 @@ namespace AssetUIManager.Systems
                     var entities = entityQuery.ToEntityArray(Allocator.Temp);
                     foreach (Entity entity in entities)
                     {
-                        if (!prefabSystem.TryGetPrefab(new PrefabID("AssetPackPrefab", packName), out PrefabBase packPrefab))
+                        if (
+                            !prefabSystem.TryGetPrefab(
+                                new PrefabID("AssetPackPrefab", packName),
+                                out PrefabBase packPrefab
+                            )
+                        )
                         {
                             continue;
                         }
 
-                        if (!EntityManager.TryGetBuffer(entity, false, out DynamicBuffer<AssetPackElement> apBuffer))
+                        if (
+                            !EntityManager.TryGetBuffer(
+                                entity,
+                                false,
+                                out DynamicBuffer<AssetPackElement> apBuffer
+                            )
+                        )
                         {
                             continue;
                         }
@@ -272,7 +404,8 @@ namespace AssetUIManager.Systems
                             if (packInAsset == packName)
                             {
                                 apBuffer.RemoveAt(i);
-                                if (log) Mod.log.Info($"Removing {entityName} from {packName}");
+                                if (log)
+                                    Mod.log.Info($"Removing {entityName} from {packName}");
                                 break;
                             }
                         }
@@ -287,9 +420,15 @@ namespace AssetUIManager.Systems
 
         public void CreateAssetPacks(string name, string icon)
         {
-            if (!prefabSystem.TryGetPrefab(new PrefabID("AssetPackPrefab", name), out PrefabBase assetPack))
+            if (
+                !prefabSystem.TryGetPrefab(
+                    new PrefabID("AssetPackPrefab", name),
+                    out PrefabBase assetPack
+                )
+            )
             {
-                AssetPackPrefab assetPackPrefab = ScriptableObject.CreateInstance<AssetPackPrefab>();
+                AssetPackPrefab assetPackPrefab =
+                    ScriptableObject.CreateInstance<AssetPackPrefab>();
                 assetPackPrefab.name = $"StarQ_AP {name}";
                 var MenuUI = assetPackPrefab.AddComponent<UIObject>();
                 MenuUI.m_Icon = icon;
@@ -307,9 +446,6 @@ namespace AssetUIManager.Systems
             }
         }
 
-        protected override void OnUpdate()
-        {
-
-        }
+        protected override void OnUpdate() { }
     }
 }
