@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using Colossal.Entities;
 using Colossal.Serialization.Entities;
 using Game;
@@ -94,9 +96,13 @@ namespace AssetUIManager.Systems
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
-            if (GameModeExtensions.IsGameOrEditor(mode))
+            if (mode == GameMode.Game)
             {
                 RefreshUI();
+            }
+            else
+            {
+                DisableUI();
             }
         }
 
@@ -148,6 +154,25 @@ namespace AssetUIManager.Systems
                 Mod.log.Info("Refresh Complete!");
         }
 
+        public void DisableUI()
+        {
+            try
+            {
+                AddAssetPacks(false, "TransportDepot", transportDepot);
+                AddAssetPacks(false, "PublicTransport", publicTransportStation);
+                AddAssetPacks(false, "PublicTransport", publicTransportStop);
+                AddAssetPacks(false, "CargoTransport", cargoTransportStation);
+                AddAssetPacks(false, "TransportLane", lineTool);
+                AddAssetPacksToNetwork(false, "TransportLane", publicTransportNetwork);
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error(ex);
+            }
+            if (log)
+                Mod.log.Info("Disabling Complete!");
+        }
+
         public void AddAssetPacks(bool yes, string packName, EntityQuery entityQuery)
         {
             if (yes)
@@ -183,33 +208,61 @@ namespace AssetUIManager.Systems
                         {
                             apEBuffer = EntityManager.AddBuffer<AssetPackElement>(entity);
                         }
-                        string entityName = prefabSystem.GetPrefabName(entity);
-                        apEBuffer.Add(app);
-                        if (log)
-                            Mod.log.Info($"Adding {entityName} to {packName}");
 
-                        if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
+                        bool contains = false;
+                        foreach (var item in apEBuffer)
                         {
-                            try
+                            if (item.m_Pack == apEntity)
                             {
-                                Mod.log.Info($"Has {apd}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Mod.log.Info(entity.GetType().Name);
-                                Mod.log.Info(ex);
+                                contains = true;
+                                break;
                             }
                         }
+                        if (!contains)
+                        {
+                            apEBuffer.Add(app);
+                        }
+
+                        if (log)
+                        {
+                            string entityName = prefabSystem.GetPrefabName(entity);
+                            Mod.log.Info($"Adding {entityName} to {packName}");
+                        }
+
+                        //if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
+                        //{
+                        //    try
+                        //    {
+                        //        Mod.log.Info($"Has {apd}");
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        Mod.log.Info(entity.GetType().Name);
+                        //        Mod.log.Info(ex);
+                        //    }
+                        //}
 
                         EntityManager.TryGetComponent(apEntity, out PrefabData apData);
                         prefabSystem.TryGetPrefab(apData, out AssetPackPrefab apPrefab);
 
                         EntityManager.TryGetComponent(entity, out PrefabData prefabData);
                         prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase);
+                        AssetPackItem api = prefabBase.GetComponent<AssetPackItem>();
 
-                        AssetPackItem ap = ScriptableObject.CreateInstance<AssetPackItem>();
-                        ap.m_Packs = new AssetPackPrefab[] { apPrefab };
-                        prefabBase.AddComponentFrom(ap);
+                        if (apPrefab != null)
+                        {
+                            if (api != null && !api.m_Packs.Contains(apPrefab))
+                            {
+                                Array.Resize(ref api.m_Packs, api.m_Packs.Length + 1);
+                                api.m_Packs[^1] = apPrefab;
+                            }
+                            else
+                            {
+                                AssetPackItem ap = ScriptableObject.CreateInstance<AssetPackItem>();
+                                ap.m_Packs = new AssetPackPrefab[] { apPrefab };
+                                prefabBase.AddComponentFrom(ap);
+                            }
+                        }
                     }
                 }
                 catch (Exception e)
@@ -221,6 +274,7 @@ namespace AssetUIManager.Systems
             {
                 try
                 {
+                    Entity apEntity = assetPacks[packName];
                     var entities = entityQuery.ToEntityArray(Allocator.Temp);
                     foreach (Entity entity in entities)
                     {
@@ -256,6 +310,30 @@ namespace AssetUIManager.Systems
                                 if (log)
                                     Mod.log.Info($"Removing {entityName} from {packName}");
                                 break;
+                            }
+                        }
+
+                        EntityManager.TryGetComponent(apEntity, out PrefabData apData);
+                        prefabSystem.TryGetPrefab(apData, out AssetPackPrefab apPrefab);
+
+                        EntityManager.TryGetComponent(entity, out PrefabData prefabData);
+                        if (prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase))
+                        {
+                            AssetPackItem api = prefabBase.GetComponent<AssetPackItem>();
+                            if (api != null && api.m_Packs != null)
+                            {
+                                List<AssetPackPrefab> updatedPacks = api
+                                    .m_Packs.Where(p => p != apPrefab)
+                                    .ToList();
+
+                                if (updatedPacks.Count > 0)
+                                {
+                                    api.m_Packs = updatedPacks.ToArray();
+                                }
+                                else
+                                {
+                                    prefabBase.Remove<AssetPackItem>();
+                                }
                             }
                         }
                     }
@@ -358,9 +436,12 @@ namespace AssetUIManager.Systems
                         EntityManager.TryGetComponent(entity, out PrefabData prefabData);
                         prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase);
 
-                        AssetPackItem ap = ScriptableObject.CreateInstance<AssetPackItem>();
-                        ap.m_Packs = new AssetPackPrefab[] { apPrefab };
-                        prefabBase.AddComponentFrom(ap);
+                        if (apPrefab != null)
+                        {
+                            AssetPackItem ap = ScriptableObject.CreateInstance<AssetPackItem>();
+                            ap.m_Packs = new AssetPackPrefab[] { apPrefab };
+                            prefabBase.AddComponentFrom(ap);
+                        }
                     }
                 }
                 catch (Exception e)

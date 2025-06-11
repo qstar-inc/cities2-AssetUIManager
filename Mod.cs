@@ -37,8 +37,8 @@ namespace AssetUIManager
 
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset)) { } //log.Info($"Current mod asset at {asset.path}");
 
-            var harmony = new Harmony("StarQ.AssetUIManager");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            //var harmony = new Harmony("StarQ.AssetUIManager");
+            //harmony.PatchAll(Assembly.GetExecutingAssembly());
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();

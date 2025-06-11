@@ -168,10 +168,14 @@ namespace AssetUIManager.Systems
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
-            if (GameModeExtensions.IsGameOrEditor(mode))
+            if (mode == GameMode.Game)
             {
                 Mod.m_Setting.PathwayPriorityDropdownVersion++;
                 RefreshUI();
+            }
+            else
+            {
+                DisableUI();
             }
         }
 
@@ -251,6 +255,79 @@ namespace AssetUIManager.Systems
             }
             if (log)
                 Mod.log.Info("Refresh Complete!");
+        }
+
+        public void DisableUI()
+        {
+            CollectData();
+
+            log = Mod.m_Setting.VerboseLogging;
+
+            try
+            {
+                TogglePathway(false, Mod.m_Setting.PathwayPriorityDropdown);
+                ToggleHospital(false);
+                ToggleSchool(false);
+                TogglePolice(false);
+                ProcessMovingAssets(
+                    false,
+                    "StarQ_UIC RoadsBridges",
+                    "Roads",
+                    "Media/Game/Icons/CableStayed.svg",
+                    65,
+                    "",
+                    bridgeQuery,
+                    bridgesAssetMenuData,
+                    "component",
+                    new[] { "Hydroelectric_Power_Plant_01 Dam" }
+                );
+                ProcessMovingAssets(
+                    false,
+                    "StarQ_UIC RoadsParkingRoads",
+                    "Roads",
+                    "Media/Game/Icons/TwolanePerpendicularparkingRoad.svg",
+                    74,
+                    "Parking Lane",
+                    roadQuery,
+                    parksAssetMenuData,
+                    "lane",
+                    new[] { "Alley Oneway" }
+                );
+                ProcessMovingAssets(
+                    false,
+                    "StarQ_UIC PocketParks",
+                    "Parks & Recreation",
+                    "coui://starq-asset-ui-manager/PocketParks.svg",
+                    5,
+                    "",
+                    parkQuery,
+                    parksAssetMenuData,
+                    "component",
+                    Array.Empty<string>(),
+                    "PocketPark",
+                    "startsWith"
+                );
+                ProcessMovingAssets(
+                    false,
+                    "StarQ_UIC CityParks",
+                    "Parks & Recreation",
+                    "Media/Game/Icons/PropsPark.svg",
+                    6,
+                    "",
+                    parkQuery,
+                    parksAssetMenuData,
+                    "component",
+                    Array.Empty<string>(),
+                    "CityPark",
+                    "startsWith"
+                );
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error(ex);
+            }
+            if (log)
+                Mod.log.Info("Disabling Complete!");
         }
 
         public void TogglePathway(bool yes, int priority)
@@ -670,7 +747,7 @@ namespace AssetUIManager.Systems
                 Entity prisonTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Prison",
                     "Police & Administration",
-                    "Media/Game/Icons/Police.svg",
+                    "coui://starq-asset-ui-manager/Prison.png",
                     4
                 );
 
@@ -709,7 +786,6 @@ namespace AssetUIManager.Systems
                         }
 
                         Entity selectedTab = uiObj.m_Group;
-
                         if (
                             prefabSystem.TryGetComponentData(
                                 assetPrefabBase,
