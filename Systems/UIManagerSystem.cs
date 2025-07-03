@@ -209,6 +209,18 @@ namespace AssetUIManager.Systems
                     new[] { "Hydroelectric_Power_Plant_01 Dam" }
                 );
                 ProcessMovingAssets(
+                    Mod.m_Setting.QuaysInRoads,
+                    "StarQ_UIC RoadsQuays",
+                    "Roads",
+                    "Media/Game/Icons/QuaySmall03.svg",
+                    66,
+                    "",
+                    bridgeQuery,
+                    bridgesAssetMenuData,
+                    "component",
+                    new[] { "Hydroelectric_Power_Plant_01 Dam" }
+                );
+                ProcessMovingAssets(
                     Mod.m_Setting.ParkingRoadsInRoads,
                     "StarQ_UIC RoadsParkingRoads",
                     "Roads",
@@ -932,6 +944,32 @@ namespace AssetUIManager.Systems
                             continue;
 
                         bool isValid = false;
+
+                        if (
+                            UIAssetCategoryName == "StarQ_UIC RoadsQuays"
+                            || UIAssetCategoryName == "StarQ_UIC RoadsBridges"
+                        )
+                        {
+                            assetPrefabBase.TryGet(out Bridge bridgeData);
+                            if (
+                                bridgeData.m_BuildStyle == BridgeBuildStyle.Quay
+                                && UIAssetCategoryName == "StarQ_UIC RoadsQuays"
+                            )
+                            {
+                                isValid = true;
+                            }
+                            else if (
+                                bridgeData.m_BuildStyle != BridgeBuildStyle.Quay
+                                && UIAssetCategoryName == "StarQ_UIC RoadsBridges"
+                            )
+                            {
+                                isValid = true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
 
                         if (processType == "lane")
                         {

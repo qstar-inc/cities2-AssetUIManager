@@ -57,11 +57,11 @@ namespace AssetUIManager
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool PedestrianInPathway { get; set; } = true;
 
+        [Exclude]
         [SettingsUIHidden]
         public int PathwayPriorityDropdownVersion { get; set; } = 0;
 
         //[SettingsUIDisableByCondition(typeof(Setting), nameof(PathwayInRoads), true)]
-        [Exclude]
         [SettingsUIDropdown(typeof(Setting), nameof(GetPathwayPriorityDropdownItems))]
         [SettingsUIValueVersion(typeof(Setting), nameof(PathwayPriorityDropdownVersion))]
         [SettingsUISection(OptionsTab, OptionsGroup)]
@@ -69,6 +69,9 @@ namespace AssetUIManager
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool BridgesInRoads { get; set; } = true;
+
+        [SettingsUISection(OptionsTab, OptionsGroup)]
+        public bool QuaysInRoads { get; set; } = true;
 
         [SettingsUISection(OptionsTab, OptionsGroup)]
         public bool ParkingRoadsInRoads { get; set; } = true;
@@ -104,6 +107,7 @@ namespace AssetUIManager
             PathwayPriorityDropdown = 74;
             PathwayPriorityDropdownVersion = 0;
             BridgesInRoads = true;
+            QuaysInRoads = true;
             ParkingRoadsInRoads = true;
             SeparatedHospitals = false;
             SeparateControlAndResearch = false;

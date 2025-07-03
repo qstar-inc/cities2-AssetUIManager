@@ -5,7 +5,7 @@
 		
 		<AssemblyName>AssetUIManager</AssemblyName>
 		<AssemblyTitle>Asset UI Manager</AssemblyTitle>
-		<Version>1.1.4</Version>
+		<Version>1.1.5</Version>
 		<Authors>StarQ</Authors>
 		
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
