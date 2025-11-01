@@ -1,4 +1,6 @@
-﻿using System.IO;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using AssetUIManager.Systems;
 using Colossal.IO.AssetDatabase;
@@ -7,13 +9,15 @@ using Colossal.UI;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
-using HarmonyLib;
+using Game.UI.Menu;
+using StarQ.Shared.Extensions;
 using Unity.Entities;
 
 namespace AssetUIManager
 {
     public class Mod : IMod
     {
+        public static string Id = nameof(AssetUIManager);
         public static string Name = Assembly
             .GetExecutingAssembly()
             .GetCustomAttribute<AssemblyTitleAttribute>()
@@ -22,38 +26,33 @@ namespace AssetUIManager
             .GetExecutingAssembly()
             .GetName()
             .Version.ToString(3);
-        public static string Author = "StarQ";
+
+        public static ILog log = LogManager.GetLogger($"{Id}").SetShowsErrorsInUI(false);
+        public static Setting m_Setting;
 
         public static string uiHostName = "starq-asset-ui-manager";
 
-        public static ILog log = LogManager
-            .GetLogger($"{nameof(AssetUIManager)}")
-            .SetShowsErrorsInUI(false);
-        public static Setting m_Setting;
-
         public void OnLoad(UpdateSystem updateSystem)
         {
-            //log.Info(nameof(OnLoad));
+            LogHelper.Init(Id, log);
+            LocaleHelper.Init(Id, Name, GetReplacements, AddLocale);
+            UIHostHelper.Init(Id, uiHostName);
 
-            if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset)) { } //log.Info($"Current mod asset at {asset.path}");
-
-            //var harmony = new Harmony("StarQ.AssetUIManager");
-            //harmony.PatchAll(Assembly.GetExecutingAssembly());
+            if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+                UIManager.defaultUISystem.AddHostLocation(
+                    uiHostName,
+                    Path.Combine(Path.GetDirectoryName(asset.path), "Icons"),
+                    false
+                );
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
-            GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
-            UIManager.defaultUISystem.AddHostLocation(
-                uiHostName,
-                Path.Combine(Path.GetDirectoryName(asset.path), "Resources"),
-                false
-            );
             AssetDatabase.global.LoadSettings(nameof(AssetUIManager), m_Setting, new Setting(this));
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
-#if DEBUG
-            m_Setting.VerboseLogging = true;
-#endif
+
+            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
+            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
+            updateSystem.UpdateBefore<UIManagerSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateBefore<AssetPackSystem>(SystemUpdatePhase.UIUpdate);
         }
 
         public void OnDispose()
@@ -65,6 +64,123 @@ namespace AssetUIManager
                 m_Setting = null;
             }
             UIManager.defaultUISystem.RemoveHostLocation(uiHostName);
+        }
+
+        public static Dictionary<string, string> GetReplacements()
+        {
+            return new Dictionary<string, string>()
+            {
+                { "Pathway", LocaleHelper.GetSubserviceName("Pathways") },
+            };
+        }
+
+        private static void AddLocale()
+        {
+            Dictionary<string, List<string>> XinXMenu = new()
+            {
+                {
+                    "PathwayInRoads",
+                    new List<string>()
+                    {
+                        LocaleHelper.GetSubserviceName("Pathways"),
+                        LocaleHelper.GetServiceName("Roads"),
+                        LocaleHelper.GetServiceName("Landscaping"),
+                    }
+                },
+                {
+                    "QuaysInRoads",
+                    new List<string>()
+                    {
+                        LocaleHelper.GetSubserviceName("PiersAndQuays"),
+                        LocaleHelper.GetServiceName("Roads"),
+                        LocaleHelper.GetServiceName("Landscaping"),
+                    }
+                },
+            };
+
+            var XinXMenu_Label = LocaleHelper.Translate($"{Id}.Mod.XinXMenu_Label");
+            var XinXMenu_Desc = LocaleHelper.Translate($"{Id}.Mod.XinXMenu_Desc");
+
+            Dictionary<string, List<string>> SeparatedTabsInMenu = new()
+            {
+                {
+                    "BridgesInRoads",
+                    new List<string>()
+                    {
+                        LocaleHelper.GetSubserviceName("StarQ_UIC RoadsBridges"),
+                        LocaleHelper.GetServiceName("Roads"),
+                    }
+                },
+                {
+                    "ParkingRoadsInRoads",
+                    new List<string>()
+                    {
+                        LocaleHelper.GetSubserviceName("StarQ_UIC RoadsParkingRoads"),
+                        LocaleHelper.GetServiceName("Roads"),
+                    }
+                },
+            };
+
+            var SeparatedTabsInMenu_Label = LocaleHelper.Translate(
+                $"{Id}.Mod.SeparatedTabsInMenu_Label"
+            );
+            var SeparatedTabsInMenu_Desc = LocaleHelper.Translate(
+                $"{Id}.Mod.SeparatedTabsInMenu_Desc"
+            );
+
+            Dictionary<string, List<string>> SeparatedTabs = new()
+            {
+                {
+                    "SeparatedHospitals",
+                    new List<string>() { LocaleHelper.GetSubserviceName("Healthcare") }
+                },
+                {
+                    "SeparatedSchools",
+                    new List<string>() { LocaleHelper.GetSubserviceName("Education") }
+                },
+                {
+                    "SeparatedPolice",
+                    new List<string>() { LocaleHelper.GetSubserviceName("Police") }
+                },
+            };
+
+            var SeparatedTabs_Label = LocaleHelper.Translate($"{Id}.Mod.SeparatedTabs_Label");
+            var SeparatedTabs_Desc = LocaleHelper.Translate($"{Id}.Mod.SeparatedTabs_Desc");
+
+            LoopDict(XinXMenu, XinXMenu_Label, XinXMenu_Desc);
+            LoopDict(SeparatedTabsInMenu, SeparatedTabsInMenu_Label, SeparatedTabsInMenu_Desc);
+            LoopDict(SeparatedTabs, SeparatedTabs_Label, SeparatedTabs_Desc);
+        }
+
+        private static void LoopDict(
+            Dictionary<string, List<string>> dict,
+            string label,
+            string desc
+        )
+        {
+            foreach (var item in dict)
+            {
+                var itemValue = item.Value;
+                try
+                {
+                    string v1 = itemValue.Count > 0 ? itemValue[0] ?? "{1}" : "{1}";
+                    string v2 = itemValue.Count > 1 ? itemValue[1] ?? "{2}" : "{2}";
+                    string v3 = itemValue.Count > 2 ? itemValue[2] ?? "{3}" : "{3}";
+
+                    LocaleHelper.AddLocalization(
+                        LocaleHelper.GetOptionsLabelLocaleId(item.Key),
+                        label.Replace("{1}", v1).Replace("{2}", v2).Replace("{3}", v3)
+                    );
+                    LocaleHelper.AddLocalization(
+                        LocaleHelper.GetOptionsDescLocaleId(item.Key),
+                        desc.Replace("{1}", v1).Replace("{2}", v2).Replace("{3}", v3)
+                    );
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.SendLog(ex, LogLevel.Error);
+                }
+            }
         }
     }
 }

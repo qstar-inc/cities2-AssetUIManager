@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="40" viewBox="0 0 40 40">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#2847d9"/>
+      <stop offset="1" stop-color="#01bcfa"/>
+    </linearGradient>
+    <clipPath id="clip-cs2">
+      <rect width="40" height="40"/>
+    </clipPath>
+  </defs>
+  <g id="cs2" clip-path="url(#clip-cs2)">
+    <g id="European">
+      <rect id="Rectangle_4426" data-name="Rectangle 4426" width="40" height="40" rx="4" fill="url(#linear-gradient)"/>
+    </g>
+    <path id="GameLogo" d="M10.356,25.617.944,20.209A1.868,1.868,0,0,1,.006,18.59V14.352L10.356,20.3ZM4.583,9.674l5.773-3.329V1.03L.937,6.494A1.87,1.87,0,0,0,.006,8.11v4.1a1.351,1.351,0,0,0,.667,1.165l3.908,2.3Zm6.993-3.326,10.349,5.946V8.057a1.869,1.869,0,0,0-.938-1.62L11.576,1.03Zm5.772,10.624L11.576,20.3v5.316l9.419-5.464a1.87,1.87,0,0,0,.931-1.617v-4.1a1.351,1.351,0,0,0-.667-1.165l-3.908-2.3Z" transform="translate(9.034 6.676)" fill="#e6e6e6"/>
+  </g>
+</svg>

@@ -1,14 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Colossal.Entities;
-using Colossal.Json;
 using Colossal.Serialization.Entities;
 using Game;
 using Game.Prefabs;
-using Game.SceneFlow;
-using Game.UI.InGame;
-using Game.Vehicles;
+using StarQ.Shared.Extensions;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -17,26 +14,12 @@ namespace AssetUIManager.Systems
 {
     public partial class UIManagerSystem : GameSystemBase
     {
+        public bool NeedUpdate = false;
+
         public class AssetMenuData
         {
             public Dictionary<string, Entity> Menu { get; set; } = new Dictionary<string, Entity>();
             public Dictionary<string, int> Priority { get; set; } = new Dictionary<string, int>();
-        }
-
-        private EntityQuery CreateQuery(
-            ComponentType[]? all = null,
-            ComponentType[]? none = null,
-            ComponentType[]? any = null
-        )
-        {
-            return GetEntityQuery(
-                new EntityQueryDesc
-                {
-                    All = all ?? Array.Empty<ComponentType>(),
-                    None = none ?? Array.Empty<ComponentType>(),
-                    Any = any ?? Array.Empty<ComponentType>(),
-                }
-            );
         }
 
 #nullable disable
@@ -50,7 +33,6 @@ namespace AssetUIManager.Systems
         private EntityQuery policeQuery;
         private EntityQuery parkQuery;
 #nullable enable
-        private static bool log;
         public static Dictionary<string, Entity> assetMenuDataDict = new();
         public static Dictionary<string, Entity> assetCatDataDict = new();
         public static Dictionary<string, int> roadMenuPriority = new();
@@ -62,7 +44,7 @@ namespace AssetUIManager.Systems
         public static AssetMenuData policeAssetMenuData = new();
         public static AssetMenuData parksAssetMenuData = new();
 
-        internal List<KeyValuePair<string, int>> GetRoadMenuPriority()
+        public static List<KeyValuePair<string, int>> GetRoadMenuPriority()
         {
             var sortedList = roadMenuPriority.OrderBy(pair => pair.Value).ToList();
             return sortedList;
@@ -72,37 +54,54 @@ namespace AssetUIManager.Systems
         {
             base.OnCreate();
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            uiAssetMenuDataQuery = CreateQuery(
-                all: new[] { ComponentType.ReadWrite<UIAssetMenuData>() }
-            );
-            uiAssetCategoryDataQuery = CreateQuery(
-                all: new[] { ComponentType.ReadWrite<UIAssetCategoryData>() }
-            );
-            roadQuery = CreateQuery(
-                all: new[] { ComponentType.ReadWrite<RoadData>() },
-                none: new[] { ComponentType.ReadWrite<BridgeData>() }
-            );
-            bridgeQuery = CreateQuery(
-                all: new[]
-                {
-                    ComponentType.ReadWrite<BridgeData>(),
-                    ComponentType.ReadWrite<RoadData>(),
-                },
-                none: new[] { ComponentType.ReadWrite<TrackData>() }
-            );
-            hospitalQuery = CreateQuery(all: new[] { ComponentType.ReadWrite<HospitalData>() });
-            educationQuery = CreateQuery(all: new[] { ComponentType.ReadWrite<SchoolData>() });
-            policeQuery = CreateQuery(
-                any: new[]
-                {
-                    ComponentType.ReadWrite<PoliceStationData>(),
-                    ComponentType.ReadWrite<PrisonData>(),
-                }
-            );
-            parkQuery = CreateQuery(
-                all: new[] { ComponentType.ReadWrite<ParkData>() },
-                none: new[] { ComponentType.ReadWrite<ServiceUpgradeData>() }
-            );
+            uiAssetMenuDataQuery = SystemAPI.QueryBuilder().WithAll<UIAssetMenuData>().Build();
+            uiAssetCategoryDataQuery = SystemAPI
+                .QueryBuilder()
+                .WithAll<UIAssetCategoryData>()
+                .Build();
+            roadQuery = SystemAPI.QueryBuilder().WithAll<RoadData>().WithNone<BridgeData>().Build();
+            bridgeQuery = SystemAPI
+                .QueryBuilder()
+                .WithAll<BridgeData, RoadData>()
+                .WithNone<TrackData>()
+                .Build();
+            hospitalQuery = SystemAPI.QueryBuilder().WithAll<HospitalData>().Build();
+            educationQuery = SystemAPI.QueryBuilder().WithAll<SchoolData>().Build();
+            policeQuery = SystemAPI.QueryBuilder().WithAny<PoliceStationData, PrisonData>().Build();
+            parkQuery = SystemAPI
+                .QueryBuilder()
+                .WithAll<ParkData>()
+                .WithNone<ServiceUpgradeData>()
+                .Build();
+
+            Mod.m_Setting.onSettingsApplied += OnSettingsChanged;
+            NeedUpdate = true;
+            CollectData();
+        }
+
+        protected override void OnUpdate() => RefreshOrDisable();
+
+        //protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        //{
+        //    base.OnGameLoadingComplete(purpose, mode);
+        //    //Mod.m_Setting.IsGame = mode.IsGame();
+        //    //RefreshOrDisable();
+        //    RefreshUI();
+        //}
+
+        private void OnSettingsChanged(Game.Settings.Setting setting) => NeedUpdate = true;
+
+        public void RefreshOrDisable()
+        {
+            CollectData();
+            //if (Mod.m_Setting.IsGame)
+            //{
+            //Mod.m_Setting.PathwayPriorityDropdownVersion++;
+            RefreshUI();
+            //    return;
+            //}
+
+            //DisableUI();
         }
 
         public void CollectData()
@@ -114,9 +113,8 @@ namespace AssetUIManager.Systems
                 {
                     string prefabName = prefabSystem.GetPrefabName(entity);
                     if (!assetMenuDataDict.ContainsKey(prefabName))
-                    {
                         assetMenuDataDict.Add(prefabName, entity);
-                    }
+
                     if (prefabName == "Roads")
                     {
                         DynamicBuffer<UIGroupElement> assetMenuBuffer =
@@ -129,20 +127,19 @@ namespace AssetUIManager.Systems
                             prefabSystem.TryGetPrefab(uge, out PrefabBase prefabBase);
                             prefabBase.TryGet(out UIObject ubj);
                             if (!roadMenuPriority.ContainsKey(name))
-                            {
                                 roadMenuPriority.Add(name, ubj.m_Priority);
-                            }
-                            if (log)
-                                Mod.log.Info(
-                                    $"Adding {name} to roadMenuPriority as {ubj.m_Priority}"
-                                );
+
+                            //LogHelper.SendLog(
+                            //    $"Adding {name} to roadMenuPriority as {ubj.m_Priority}"
+                            //);
                         }
                     }
                 }
+                //Mod.m_Setting.PathwayPriorityDropdownVersion++;
             }
             catch (Exception e)
             {
-                Mod.log.Error(e);
+                LogHelper.SendLog(e, LogLevel.Error);
             }
 
             try
@@ -152,47 +149,28 @@ namespace AssetUIManager.Systems
                 {
                     string prefabName = prefabSystem.GetPrefabName(entity);
                     if (!assetCatDataDict.ContainsKey(prefabName))
-                    {
                         assetCatDataDict.Add(prefabName, entity);
-                    }
-                    if (log)
-                        Mod.log.Info($"Adding {prefabName} to assetCatDataDict");
+
+                    //LogHelper.SendLog($"Adding {prefabName} to assetCatDataDict");
                 }
             }
             catch (Exception e)
             {
-                Mod.log.Error(e);
-            }
-        }
-
-        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
-        {
-            base.OnGameLoadingComplete(purpose, mode);
-            if (mode == GameMode.Game)
-            {
-                Mod.m_Setting.PathwayPriorityDropdownVersion++;
-                RefreshUI();
-            }
-            else
-            {
-                DisableUI();
+                LogHelper.SendLog(e, LogLevel.Error);
             }
         }
 
         public void RefreshUI()
         {
-            if (Mod.m_Setting == null)
-            {
-                Mod.log.Info("cancel");
+            if (Mod.m_Setting == null || !NeedUpdate)
                 return;
-            }
-            CollectData();
 
-            log = Mod.m_Setting.VerboseLogging;
+            //log = Mod.m_Setting.VerboseLogging;
 
             try
             {
-                TogglePathway(Mod.m_Setting.PathwayInRoads, Mod.m_Setting.PathwayPriorityDropdown);
+                TogglePathway(Mod.m_Setting.PathwayInRoads, 66);
+                TogglePathway(Mod.m_Setting.QuaysInRoads, 67, 2);
                 ToggleHospital(Mod.m_Setting.SeparatedHospitals);
                 ToggleSchool(Mod.m_Setting.SeparatedSchools);
                 TogglePolice(Mod.m_Setting.SeparatedPolice);
@@ -200,7 +178,7 @@ namespace AssetUIManager.Systems
                     Mod.m_Setting.BridgesInRoads,
                     "StarQ_UIC RoadsBridges",
                     "Roads",
-                    "Media/Game/Icons/CableStayed.svg",
+                    UIHostHelper.MGI("CableStayed"),
                     65,
                     "",
                     bridgeQuery,
@@ -210,10 +188,10 @@ namespace AssetUIManager.Systems
                 );
                 ProcessMovingAssets(
                     Mod.m_Setting.QuaysInRoads,
-                    "StarQ_UIC RoadsQuays",
+                    "PiersAndQuays",
                     "Roads",
-                    "Media/Game/Icons/QuaySmall03.svg",
-                    66,
+                    UIHostHelper.MGI("QuaySmall03"),
+                    67,
                     "",
                     bridgeQuery,
                     bridgesAssetMenuData,
@@ -224,7 +202,7 @@ namespace AssetUIManager.Systems
                     Mod.m_Setting.ParkingRoadsInRoads,
                     "StarQ_UIC RoadsParkingRoads",
                     "Roads",
-                    "Media/Game/Icons/TwolanePerpendicularparkingRoad.svg",
+                    UIHostHelper.MGI("TwolanePerpendicularparkingRoad"),
                     74,
                     "Parking Lane",
                     roadQuery,
@@ -236,7 +214,7 @@ namespace AssetUIManager.Systems
                     Mod.m_Setting.SeparatedPocketParks,
                     "StarQ_UIC PocketParks",
                     "Parks & Recreation",
-                    "coui://starq-asset-ui-manager/PocketParks.svg",
+                    UIHostHelper.Icon("PocketParks.svg"),
                     5,
                     "",
                     parkQuery,
@@ -250,7 +228,7 @@ namespace AssetUIManager.Systems
                     Mod.m_Setting.SeparatedCityParks,
                     "StarQ_UIC CityParks",
                     "Parks & Recreation",
-                    "Media/Game/Icons/PropsPark.svg",
+                    UIHostHelper.MGI("PropsPark"),
                     6,
                     "",
                     parkQuery,
@@ -263,86 +241,85 @@ namespace AssetUIManager.Systems
             }
             catch (Exception ex)
             {
-                Mod.log.Error(ex);
+                LogHelper.SendLog(ex, LogLevel.Error);
             }
-            if (log)
-                Mod.log.Info("Refresh Complete!");
+            //if (log)
+            LogHelper.SendLog("Refresh Complete!");
+            NeedUpdate = false;
         }
 
-        public void DisableUI()
-        {
-            CollectData();
+        //public void DisableUI()
+        //{
+        //    try
+        //    {
+        //        TogglePathway(false, 66);
+        //        TogglePathway(false, 67, 2);
+        //        ToggleHospital(false);
+        //        ToggleSchool(false);
+        //        TogglePolice(false);
+        //        ProcessMovingAssets(
+        //            false,
+        //            "StarQ_UIC RoadsBridges",
+        //            "Roads",
+        //            "Media/Game/Icons/CableStayed.svg",
+        //            65,
+        //            "",
+        //            bridgeQuery,
+        //            bridgesAssetMenuData,
+        //            "component",
+        //            new[] { "Hydroelectric_Power_Plant_01 Dam" }
+        //        );
+        //        ProcessMovingAssets(
+        //            false,
+        //            "StarQ_UIC RoadsParkingRoads",
+        //            "Roads",
+        //            "Media/Game/Icons/TwolanePerpendicularparkingRoad.svg",
+        //            74,
+        //            "Parking Lane",
+        //            roadQuery,
+        //            parksAssetMenuData,
+        //            "lane",
+        //            new[] { "Alley Oneway" }
+        //        );
+        //        ProcessMovingAssets(
+        //            false,
+        //            "StarQ_UIC PocketParks",
+        //            "Parks & Recreation",
+        //            UIHostHelper.Icon("PocketParks.svg"),
+        //            5,
+        //            "",
+        //            parkQuery,
+        //            parksAssetMenuData,
+        //            "component",
+        //            Array.Empty<string>(),
+        //            "PocketPark",
+        //            "startsWith"
+        //        );
+        //        ProcessMovingAssets(
+        //            false,
+        //            "StarQ_UIC CityParks",
+        //            "Parks & Recreation",
+        //            "Media/Game/Icons/PropsPark.svg",
+        //            6,
+        //            "",
+        //            parkQuery,
+        //            parksAssetMenuData,
+        //            "component",
+        //            Array.Empty<string>(),
+        //            "CityPark",
+        //            "startsWith"
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogHelper.SendLog(ex, LogLevel.Error);
+        //    }
+        //    if (log)
+        //        LogHelper.SendLog("Disabling Complete!");
+        //    NeedUpdate = true;
+        //}
 
-            log = Mod.m_Setting.VerboseLogging;
-
-            try
-            {
-                TogglePathway(false, Mod.m_Setting.PathwayPriorityDropdown);
-                ToggleHospital(false);
-                ToggleSchool(false);
-                TogglePolice(false);
-                ProcessMovingAssets(
-                    false,
-                    "StarQ_UIC RoadsBridges",
-                    "Roads",
-                    "Media/Game/Icons/CableStayed.svg",
-                    65,
-                    "",
-                    bridgeQuery,
-                    bridgesAssetMenuData,
-                    "component",
-                    new[] { "Hydroelectric_Power_Plant_01 Dam" }
-                );
-                ProcessMovingAssets(
-                    false,
-                    "StarQ_UIC RoadsParkingRoads",
-                    "Roads",
-                    "Media/Game/Icons/TwolanePerpendicularparkingRoad.svg",
-                    74,
-                    "Parking Lane",
-                    roadQuery,
-                    parksAssetMenuData,
-                    "lane",
-                    new[] { "Alley Oneway" }
-                );
-                ProcessMovingAssets(
-                    false,
-                    "StarQ_UIC PocketParks",
-                    "Parks & Recreation",
-                    "coui://starq-asset-ui-manager/PocketParks.svg",
-                    5,
-                    "",
-                    parkQuery,
-                    parksAssetMenuData,
-                    "component",
-                    Array.Empty<string>(),
-                    "PocketPark",
-                    "startsWith"
-                );
-                ProcessMovingAssets(
-                    false,
-                    "StarQ_UIC CityParks",
-                    "Parks & Recreation",
-                    "Media/Game/Icons/PropsPark.svg",
-                    6,
-                    "",
-                    parkQuery,
-                    parksAssetMenuData,
-                    "component",
-                    Array.Empty<string>(),
-                    "CityPark",
-                    "startsWith"
-                );
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error(ex);
-            }
-            if (log)
-                Mod.log.Info("Disabling Complete!");
-        }
-
-        public void TogglePathway(bool yes, int priority)
+        public void TogglePathway(bool yes, int priority, int type = 1)
         {
             try
             {
@@ -354,10 +331,10 @@ namespace AssetUIManager.Systems
                 else
                 {
                     Neighbor = "Terraforming";
-                    priority = 30;
+                    priority = type == 2 ? 31 : 30;
                 }
 
-                string itemName = "Pathways";
+                string itemName = type == 2 ? "PiersAndQuays" : "Pathways";
                 Entity itemValue = assetCatDataDict[itemName];
                 if (
                     EntityManager.TryGetComponent(itemValue, out PrefabData prefabData)
@@ -371,11 +348,11 @@ namespace AssetUIManager.Systems
                         out UIAssetCategoryData newCat
                     );
 
-                    RefreshBuffer(oldCat.m_Menu, newCat.m_Menu, "Pathways", itemValue);
+                    RefreshBuffer(oldCat.m_Menu, newCat.m_Menu, itemName, itemValue);
 
                     uiObj.m_Priority = priority;
-                    if (log)
-                        Mod.log.Info($"Moving Pathways to {Neighbor} at {priority}");
+                    //if (log)
+                    //LogHelper.SendLog($"Moving {itemName} to {Neighbor} at {priority}");
 
                     oldCat.m_Menu = newCat.m_Menu;
                     EntityManager.SetComponentData(itemValue, newCat);
@@ -383,26 +360,26 @@ namespace AssetUIManager.Systems
 
                     bool pedInPath = Mod.m_Setting.PedestrianInPathway;
                     if (!yes)
-                    {
                         pedInPath = false;
-                    }
-                    ProcessMovingAssets(
-                        pedInPath,
-                        "Pathways",
-                        "",
-                        "",
-                        0,
-                        "Pedestrian Section",
-                        roadQuery,
-                        pedStreetAssetMenuData,
-                        "lane",
-                        Array.Empty<string>()
-                    );
+
+                    if (type != 2)
+                        ProcessMovingAssets(
+                            pedInPath,
+                            itemName,
+                            "",
+                            "",
+                            0,
+                            "Pedestrian Section",
+                            roadQuery,
+                            pedStreetAssetMenuData,
+                            "lane",
+                            Array.Empty<string>()
+                        );
                 }
             }
             catch (Exception e)
             {
-                Mod.log.Error(e);
+                LogHelper.SendLog(e, LogLevel.Error);
             }
         }
 
@@ -413,31 +390,31 @@ namespace AssetUIManager.Systems
                 Entity clinicTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Clinics",
                     "Health & Deathcare",
-                    "Media/Game/Icons/Healthcare.svg",
+                    UIHostHelper.MGI("Healthcare"),
                     1
                 );
                 Entity hospitalTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Hospitals",
                     "Health & Deathcare",
-                    "Media/Game/Icons/Healthcare.svg",
+                    UIHostHelper.Icon("Hospital.svg"),
                     2
                 );
                 Entity diseaseTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC DiseaseControl",
                     "Health & Deathcare",
-                    "Media/Game/Icons/Healthcare.svg",
+                    UIHostHelper.Icon("DiseaseControl.svg"),
                     3
                 );
                 Entity researchTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC HealthResearch",
                     "Health & Deathcare",
-                    "Media/Game/Icons/Healthcare.svg",
+                    UIHostHelper.Icon("HealthResearch.svg"),
                     4
                 );
                 Entity mergedControlAndResearchTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC HealthResearch",
                     "Health & Deathcare",
-                    "Media/Game/Icons/Healthcare.svg",
+                    UIHostHelper.Icon("HealthResearch.svg"),
                     3
                 );
 
@@ -490,43 +467,28 @@ namespace AssetUIManager.Systems
                                     hospitalData.m_HealthRange.x == 0
                                     && hospitalData.m_HealthRange.y == 0
                                 )
-                                {
                                     selectedTab = clinicTab;
-                                }
                                 else if (!Mod.m_Setting.SeparateControlAndResearch)
-                                {
                                     selectedTab = mergedControlAndResearchTab;
-                                }
                                 else
-                                {
                                     selectedTab = researchTab;
-                                }
                             }
                             else if (hospitalData.m_TreatDiseases && !hospitalData.m_TreatInjuries)
                             {
                                 if (!Mod.m_Setting.SeparateControlAndResearch)
-                                {
                                     selectedTab = mergedControlAndResearchTab;
-                                }
                                 else
-                                {
                                     selectedTab = diseaseTab;
-                                }
                             }
                             else if (
                                 hospitalData.m_TreatmentBonus >= 30
                                 && hospitalData.m_HealthRange.x == 0
                                 && hospitalData.m_HealthRange.y >= 100
                             )
-                            {
                                 selectedTab = hospitalTab;
-                            }
                             else
-                            {
                                 selectedTab = clinicTab;
-                            }
                         }
-                        ;
 
                         RefreshBuffer(uiObj.m_Group, selectedTab, name, entity);
 
@@ -536,7 +498,7 @@ namespace AssetUIManager.Systems
                 }
                 catch (Exception e)
                 {
-                    Mod.log.Error(e);
+                    LogHelper.SendLog(e, LogLevel.Error);
                 }
             }
             else
@@ -564,9 +526,7 @@ namespace AssetUIManager.Systems
                             );
 
                             if (!hospitalsAssetMenuData.Menu.ContainsKey(name))
-                            {
                                 continue;
-                            }
 
                             RefreshBuffer(
                                 uiObj.m_Group,
@@ -582,7 +542,7 @@ namespace AssetUIManager.Systems
                     }
                     catch (Exception e)
                     {
-                        Mod.log.Error(e);
+                        LogHelper.SendLog(e, LogLevel.Error);
                     }
                 }
             }
@@ -595,25 +555,25 @@ namespace AssetUIManager.Systems
                 Entity edu1Tab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Schools",
                     "Education & Research",
-                    "coui://starq-asset-ui-manager/Edu1.svg",
+                    UIHostHelper.Icon("Edu1.svg"),
                     1
                 );
                 Entity edu2Tab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC HighSchools",
                     "Education & Research",
-                    "coui://starq-asset-ui-manager/Edu2.svg",
+                    UIHostHelper.Icon("Edu2.svg"),
                     2
                 );
                 Entity edu3Tab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Colleges",
                     "Education & Research",
-                    "coui://starq-asset-ui-manager/Edu3.svg",
+                    UIHostHelper.Icon("Edu3.svg"),
                     3
                 );
                 Entity edu4Tab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Universities",
                     "Education & Research",
-                    "coui://starq-asset-ui-manager/Edu4.svg",
+                    UIHostHelper.Icon("Edu4.svg"),
                     4
                 );
 
@@ -658,21 +618,13 @@ namespace AssetUIManager.Systems
                         Entity selectedTab = uiObj.m_Group;
 
                         if (schoolData.m_EducationLevel == 1)
-                        {
                             selectedTab = edu1Tab;
-                        }
                         else if (schoolData.m_EducationLevel == 2)
-                        {
                             selectedTab = edu2Tab;
-                        }
                         else if (schoolData.m_EducationLevel == 3)
-                        {
                             selectedTab = edu3Tab;
-                        }
                         else if (schoolData.m_EducationLevel == 4)
-                        {
                             selectedTab = edu4Tab;
-                        }
 
                         RefreshBuffer(uiObj.m_Group, selectedTab, name, entity);
 
@@ -682,7 +634,7 @@ namespace AssetUIManager.Systems
                 }
                 catch (Exception e)
                 {
-                    Mod.log.Error(e);
+                    LogHelper.SendLog(e, LogLevel.Error);
                 }
             }
             else
@@ -710,9 +662,7 @@ namespace AssetUIManager.Systems
                             );
 
                             if (!schoolsAssetMenuData.Menu.ContainsKey(name))
-                            {
                                 continue;
-                            }
 
                             RefreshBuffer(
                                 uiObj.m_Group,
@@ -728,7 +678,7 @@ namespace AssetUIManager.Systems
                     }
                     catch (Exception e)
                     {
-                        Mod.log.Error(e);
+                        LogHelper.SendLog(e, LogLevel.Error);
                     }
                 }
             }
@@ -741,25 +691,25 @@ namespace AssetUIManager.Systems
                 Entity localPD = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC LocalPolice",
                     "Police & Administration",
-                    "Media/Game/Icons/Police.svg",
+                    UIHostHelper.MGI("Police"),
                     1
                 );
                 Entity hqTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC PoliceHQ",
                     "Police & Administration",
-                    "Media/Game/Icons/Police.svg",
+                    UIHostHelper.Icon("PoliceHQ.svg"),
                     2
                 );
                 Entity intelTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Intelligence",
                     "Police & Administration",
-                    "Media/Game/Icons/Police.svg",
+                    UIHostHelper.Icon("Intelligence.svg"),
                     3
                 );
                 Entity prisonTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Prison",
                     "Police & Administration",
-                    "coui://starq-asset-ui-manager/Prison.png",
+                    UIHostHelper.Icon("Prison.svg"),
                     4
                 );
 
@@ -804,9 +754,7 @@ namespace AssetUIManager.Systems
                                 out PrisonData prisonData
                             )
                         )
-                        {
                             selectedTab = prisonTab;
-                        }
                         else if (
                             prefabSystem.TryGetComponentData(
                                 assetPrefabBase,
@@ -819,19 +767,13 @@ namespace AssetUIManager.Systems
                                 && policeStationData.m_PurposeMask.HasFlag(PolicePurpose.Emergency)
                                 && policeStationData.m_JailCapacity >= 100
                             )
-                            {
                                 selectedTab = hqTab;
-                            }
                             else if (
                                 policeStationData.m_PurposeMask.HasFlag(PolicePurpose.Intelligence)
                             )
-                            {
                                 selectedTab = intelTab;
-                            }
                             else
-                            {
                                 selectedTab = localPD;
-                            }
                         }
                         ;
 
@@ -843,7 +785,7 @@ namespace AssetUIManager.Systems
                 }
                 catch (Exception e)
                 {
-                    Mod.log.Error(e);
+                    LogHelper.SendLog(e, LogLevel.Error);
                 }
             }
             else
@@ -871,9 +813,7 @@ namespace AssetUIManager.Systems
                             );
 
                             if (!policeAssetMenuData.Menu.ContainsKey(name))
-                            {
                                 continue;
-                            }
 
                             RefreshBuffer(
                                 uiObj.m_Group,
@@ -889,14 +829,14 @@ namespace AssetUIManager.Systems
                     }
                     catch (Exception e)
                     {
-                        Mod.log.Error(e);
+                        LogHelper.SendLog(e, LogLevel.Error);
                     }
                 }
             }
         }
 
         public void ProcessMovingAssets(
-            bool yes,
+            bool enabled,
             string UIAssetCategoryName,
             string UIAssetMenuName,
             string UIAssetCategoryIcon,
@@ -910,7 +850,7 @@ namespace AssetUIManager.Systems
             string? includeType = null
         )
         {
-            if (yes)
+            if (enabled)
             {
                 Entity tab = CreateUIAssetCategoryPrefab(
                     UIAssetCategoryName,
@@ -946,29 +886,23 @@ namespace AssetUIManager.Systems
                         bool isValid = false;
 
                         if (
-                            UIAssetCategoryName == "StarQ_UIC RoadsQuays"
+                            UIAssetCategoryName == "PiersAndQuays"
                             || UIAssetCategoryName == "StarQ_UIC RoadsBridges"
                         )
                         {
                             assetPrefabBase.TryGet(out Bridge bridgeData);
                             if (
                                 bridgeData.m_BuildStyle == BridgeBuildStyle.Quay
-                                && UIAssetCategoryName == "StarQ_UIC RoadsQuays"
+                                && UIAssetCategoryName == "PiersAndQuays"
                             )
-                            {
                                 isValid = true;
-                            }
                             else if (
                                 bridgeData.m_BuildStyle != BridgeBuildStyle.Quay
                                 && UIAssetCategoryName == "StarQ_UIC RoadsBridges"
                             )
-                            {
                                 isValid = true;
-                            }
                             else
-                            {
                                 continue;
-                            }
                         }
 
                         if (processType == "lane")
@@ -988,7 +922,7 @@ namespace AssetUIManager.Systems
                                 }
                                 catch (Exception e)
                                 {
-                                    Mod.log.Error(e);
+                                    LogHelper.SendLog(e, LogLevel.Error);
                                 }
                             }
                         }
@@ -1007,23 +941,18 @@ namespace AssetUIManager.Systems
                                         includeType == "startsWith"
                                         && prefabName.StartsWith(includePattern)
                                     )
-                                    {
                                         isValid = true;
-                                    }
                                     else if (
                                         includeType == "endsWith"
                                         && prefabName.EndsWith(includePattern)
                                     )
-                                    {
                                         isValid = true;
-                                    }
                                     else if (
                                         includeType == "contains"
                                         && prefabName.Contains(includePattern)
                                     )
-                                    {
                                         isValid = true;
-                                    }
+
                                     if (
                                         includePattern == "PocketPark"
                                         && prefabSystem.TryGetComponentData(
@@ -1035,14 +964,12 @@ namespace AssetUIManager.Systems
                                             || buildingData.m_LotSize.y == 1
                                         )
                                     )
-                                    {
                                         isValid = true;
-                                    }
                                 }
                             }
                             catch (Exception e)
                             {
-                                Mod.log.Error(e);
+                                LogHelper.SendLog(e, LogLevel.Error);
                             }
                         }
 
@@ -1083,14 +1010,14 @@ namespace AssetUIManager.Systems
                             }
                             catch (Exception e)
                             {
-                                Mod.log.Error(e);
+                                LogHelper.SendLog(e, LogLevel.Error);
                             }
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    Mod.log.Error(e);
+                    LogHelper.SendLog(e, LogLevel.Error);
                 }
             }
             else
@@ -1150,9 +1077,7 @@ namespace AssetUIManager.Systems
                                 }
                             }
                             else if (processType == "component")
-                            {
                                 isValid = true;
-                            }
 
                             if (isValid)
                             {
@@ -1166,7 +1091,7 @@ namespace AssetUIManager.Systems
                     }
                     catch (Exception e)
                     {
-                        Mod.log.Error(e);
+                        LogHelper.SendLog(e, LogLevel.Error);
                     }
                 }
             }
@@ -1218,7 +1143,7 @@ namespace AssetUIManager.Systems
                 EntityManager.GetBuffer<UIGroupElement>(oldCat);
 
             var itemName = prefabSystem.GetPrefabName(moverEntity);
-            var tabNameOld = prefabSystem.GetPrefabName(oldCat);
+            //var tabNameOld = prefabSystem.GetPrefabName(oldCat);
             for (int i = 0; i < uiGroupElementbuffer.Length; i++)
             {
                 var uge = uiGroupElementbuffer[i].m_Prefab;
@@ -1226,8 +1151,7 @@ namespace AssetUIManager.Systems
                 if (tabName == moverName)
                 {
                     uiGroupElementbuffer.RemoveAt(i);
-                    if (log)
-                        Mod.log.Info($"Removing {itemName} from {tabNameOld}");
+                    //LogHelper.SendLog($"Removing {itemName} from {tabNameOld}");
                     break;
                 }
             }
@@ -1237,10 +1161,8 @@ namespace AssetUIManager.Systems
             EntityManager
                 .GetBuffer<UnlockRequirement>(newCat)
                 .Add(new UnlockRequirement(moverEntity, UnlockFlags.RequireAny));
-            if (log)
-                Mod.log.Info($"Adding {itemName} to {tabNameNew}");
+            //if (log)
+            LogHelper.SendLog($"Adding {itemName} to {tabNameNew}");
         }
-
-        protected override void OnUpdate() { }
     }
 }
