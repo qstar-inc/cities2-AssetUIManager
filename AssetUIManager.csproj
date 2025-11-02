@@ -3,7 +3,7 @@
     <Configurations>Debug;Release</Configurations>
     <AssemblyName>AssetUIManager</AssemblyName>
     <AssemblyTitle>Asset UI Manager</AssemblyTitle>
-    <Version>1.2.2</Version>
+    <Version>1.2.4</Version>
     <Authors>StarQ</Authors>
     <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
     <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
@@ -14,6 +14,9 @@
   <Import Project="..\..\ModsPersonal\StarQ.Shared\StarQ.Shared.projitems" Label="Shared" />
   <ItemGroup>
     <Reference Include="Game">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Colossal.AssetPipeline">
       <Private>false</Private>
     </Reference>
     <Reference Include="Colossal.Core">

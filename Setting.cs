@@ -78,6 +78,9 @@ namespace AssetUIManager
         public bool SeparatedCityParks { get; set; } = true;
 
         [SettingsUISection(GeneralTab, AssetPackGroup)]
+        public bool BaseGameAssetPacks { get; set; } = true;
+
+        [SettingsUISection(GeneralTab, AssetPackGroup)]
         public bool EnableAssetPacks { get; set; } = true;
 
         //[SettingsUISection(GeneralTab, InfoGroup)]
@@ -92,10 +95,10 @@ namespace AssetUIManager
             PathwayInRoads = true;
             QuaysInRoads = true;
             ParkingRoadsInRoads = true;
-            SeparatedHospitals = false;
-            SeparateControlAndResearch = false;
+            SeparatedHospitals = true;
+            SeparateControlAndResearch = true;
             SeparatedSchools = true;
-            SeparatedPolice = false;
+            SeparatedPolice = true;
             SeparatedPocketParks = true;
             SeparatedCityParks = true;
             EnableAssetPacks = true;

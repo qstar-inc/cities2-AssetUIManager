@@ -15,6 +15,7 @@ namespace AssetUIManager.Systems
     public partial class UIManagerSystem : GameSystemBase
     {
         public bool NeedUpdate = false;
+        public bool DataCollected = false;
 
         public class AssetMenuData
         {
@@ -79,7 +80,13 @@ namespace AssetUIManager.Systems
             CollectData();
         }
 
-        protected override void OnUpdate() => RefreshOrDisable();
+        protected override void OnUpdate() { }
+
+        protected override void OnGamePreload(Purpose purpose, GameMode mode)
+        {
+            base.OnGamePreload(purpose, mode);
+            RefreshOrDisable();
+        }
 
         //protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         //{
@@ -89,7 +96,11 @@ namespace AssetUIManager.Systems
         //    RefreshUI();
         //}
 
-        private void OnSettingsChanged(Game.Settings.Setting setting) => NeedUpdate = true;
+        private void OnSettingsChanged(Game.Settings.Setting setting)
+        {
+            NeedUpdate = true;
+            RefreshOrDisable();
+        }
 
         public void RefreshOrDisable()
         {
@@ -106,6 +117,9 @@ namespace AssetUIManager.Systems
 
         public void CollectData()
         {
+            if (DataCollected)
+                return;
+            LogHelper.SendLog("Collecting Data", LogLevel.DEV);
             try
             {
                 var entities = uiAssetMenuDataQuery.ToEntityArray(Allocator.Temp);
@@ -158,6 +172,8 @@ namespace AssetUIManager.Systems
             {
                 LogHelper.SendLog(e, LogLevel.Error);
             }
+            DataCollected = true;
+            LogHelper.SendLog("Collecting Data completed", LogLevel.DEV);
         }
 
         public void RefreshUI()
@@ -167,6 +183,7 @@ namespace AssetUIManager.Systems
 
             //log = Mod.m_Setting.VerboseLogging;
 
+            LogHelper.SendLog("Refreshing UI elements", LogLevel.DEV);
             try
             {
                 TogglePathway(Mod.m_Setting.PathwayInRoads, 66);
@@ -214,7 +231,7 @@ namespace AssetUIManager.Systems
                     Mod.m_Setting.SeparatedPocketParks,
                     "StarQ_UIC PocketParks",
                     "Parks & Recreation",
-                    UIHostHelper.Icon("PocketParks.svg"),
+                    UIHostHelper.Icon("PocketParks"),
                     5,
                     "",
                     parkQuery,
@@ -396,25 +413,25 @@ namespace AssetUIManager.Systems
                 Entity hospitalTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Hospitals",
                     "Health & Deathcare",
-                    UIHostHelper.Icon("Hospital.svg"),
+                    UIHostHelper.Icon("Hospital"),
                     2
                 );
                 Entity diseaseTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC DiseaseControl",
                     "Health & Deathcare",
-                    UIHostHelper.Icon("DiseaseControl.svg"),
+                    UIHostHelper.Icon("DiseaseControl"),
                     3
                 );
                 Entity researchTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC HealthResearch",
                     "Health & Deathcare",
-                    UIHostHelper.Icon("HealthResearch.svg"),
+                    UIHostHelper.Icon("HealthResearch"),
                     4
                 );
                 Entity mergedControlAndResearchTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC HealthResearch",
                     "Health & Deathcare",
-                    UIHostHelper.Icon("HealthResearch.svg"),
+                    UIHostHelper.Icon("HealthResearch"),
                     3
                 );
 
@@ -555,25 +572,25 @@ namespace AssetUIManager.Systems
                 Entity edu1Tab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Schools",
                     "Education & Research",
-                    UIHostHelper.Icon("Edu1.svg"),
+                    UIHostHelper.Icon("Edu1"),
                     1
                 );
                 Entity edu2Tab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC HighSchools",
                     "Education & Research",
-                    UIHostHelper.Icon("Edu2.svg"),
+                    UIHostHelper.Icon("Edu2"),
                     2
                 );
                 Entity edu3Tab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Colleges",
                     "Education & Research",
-                    UIHostHelper.Icon("Edu3.svg"),
+                    UIHostHelper.Icon("Edu3"),
                     3
                 );
                 Entity edu4Tab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Universities",
                     "Education & Research",
-                    UIHostHelper.Icon("Edu4.svg"),
+                    UIHostHelper.Icon("Edu4"),
                     4
                 );
 
@@ -697,19 +714,19 @@ namespace AssetUIManager.Systems
                 Entity hqTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC PoliceHQ",
                     "Police & Administration",
-                    UIHostHelper.Icon("PoliceHQ.svg"),
+                    UIHostHelper.Icon("PoliceHQ"),
                     2
                 );
                 Entity intelTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Intelligence",
                     "Police & Administration",
-                    UIHostHelper.Icon("Intelligence.svg"),
+                    UIHostHelper.Icon("Intelligence"),
                     3
                 );
                 Entity prisonTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Prison",
                     "Police & Administration",
-                    UIHostHelper.Icon("Prison.svg"),
+                    UIHostHelper.Icon("Prison"),
                     4
                 );
 

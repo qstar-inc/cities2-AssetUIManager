@@ -68,13 +68,13 @@ namespace AssetUIManager.Systems
             NeedUpdate = true;
         }
 
-        protected override void OnUpdate() => RefreshOrDisable();
+        protected override void OnUpdate() { }
 
-        //protected override void OnGamePreload(Purpose purpose, GameMode mode)
-        //{
-        //    base.OnGamePreload(purpose, mode);
-        //    RefreshUI();
-        //}
+        protected override void OnGamePreload(Purpose purpose, GameMode mode)
+        {
+            base.OnGamePreload(purpose, mode);
+            RefreshOrDisable();
+        }
 
         //protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         //{
@@ -84,7 +84,11 @@ namespace AssetUIManager.Systems
         //    //RefreshUI();
         //}
 
-        private void OnSettingsChanged(Game.Settings.Setting setting) => NeedUpdate = true;
+        private void OnSettingsChanged(Game.Settings.Setting setting)
+        {
+            NeedUpdate = true;
+            RefreshOrDisable();
+        }
 
         public void RefreshOrDisable()
         {
@@ -101,8 +105,9 @@ namespace AssetUIManager.Systems
 
         public void CreateAssetPacksInBulk()
         {
-            CreateAssetPacks("BaseGame", UIHostHelper.Icon("CS2.svg"), -20);
-            CreateAssetPacks("TransportDepot", UIHostHelper.Icon("Depots.svg"), 7700001);
+            CreateContentPrefab("BaseGame");
+            CreateAssetPacks("BaseGame", UIHostHelper.DLC("Game"), -20);
+            CreateAssetPacks("TransportDepot", UIHostHelper.Icon("Depots"), 7700001);
             CreateAssetPacks("PublicTransport", UIHostHelper.MGI("Transportation"), 7700002);
             CreateAssetPacks("CargoTransport", UIHostHelper.MGI("DeliveryVan"), 7700003);
             CreateAssetPacks(
@@ -119,7 +124,7 @@ namespace AssetUIManager.Systems
 
             try
             {
-                AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "BaseGame", allAssets);
+                AddAssetPacks(Mod.m_Setting.BaseGameAssetPacks, "BaseGame", allAssets);
                 AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "TransportDepot", transportDepot);
                 AddAssetPacks(
                     Mod.m_Setting.EnableAssetPacks,
@@ -178,6 +183,13 @@ namespace AssetUIManager.Systems
             {
                 try
                 {
+                    PrefabBase? contentPrefab = null;
+                    if (packName == "BaseGame")
+                        prefabSystem.TryGetPrefab(
+                            new PrefabID("ContentPrefab", "StarQ_CP BaseGame"),
+                            out contentPrefab
+                        );
+
                     Entity apEntity = assetPacks[packName];
                     if (apEntity == null)
                     {
@@ -283,6 +295,14 @@ namespace AssetUIManager.Systems
                                 prefabBase.AddComponentFrom(ap);
                             }
                         }
+
+                        if (contentPrefab != null)
+                        {
+                            ContentPrerequisite cpd =
+                                ScriptableObject.CreateInstance<ContentPrerequisite>();
+                            cpd.m_ContentPrerequisite = contentPrefab as ContentPrefab;
+                            prefabBase.AddComponentFrom(cpd);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -292,6 +312,12 @@ namespace AssetUIManager.Systems
             }
             else
             {
+                PrefabBase? contentPrefab = null;
+                if (packName == "BaseGame")
+                    prefabSystem.TryGetPrefab(
+                        new PrefabID("ContentPrefab", "StarQ_CP BaseGame"),
+                        out contentPrefab
+                    );
                 try
                 {
                     Entity apEntity = assetPacks[packName];
@@ -347,6 +373,13 @@ namespace AssetUIManager.Systems
                                     prefabBase.Remove<AssetPackItem>();
                             }
                         }
+
+                        if (
+                            contentPrefab != null
+                            && prefabBase.TryGet(out ContentPrerequisite cPrereq)
+                            && cPrereq.m_ContentPrerequisite == contentPrefab
+                        )
+                            prefabBase.Remove<ContentPrerequisite>();
                     }
                 }
                 catch (Exception e)
@@ -525,6 +558,30 @@ namespace AssetUIManager.Systems
             prefabSystem.TryGetEntity(assetPack, out Entity assetPackEntity);
             if (!assetPacks.ContainsKey(name))
                 assetPacks.Add(name, assetPackEntity);
+        }
+
+        public void CreateContentPrefab(string name)
+        {
+            if (
+                !prefabSystem.TryGetPrefab(
+                    new PrefabID("ContentPrefab", $"StarQ_CP {name}"),
+                    out PrefabBase contentPrefab
+                )
+            )
+            {
+                ContentPrefab contentPrefabNew = ScriptableObject.CreateInstance<ContentPrefab>();
+                contentPrefabNew.name = $"StarQ_CP {name}";
+                var dlc = contentPrefabNew.AddComponent<DlcRequirement>();
+
+                dlc.m_Notes = "Base Game content";
+                dlc.m_BaseGameRequiresDatabase = false;
+                dlc.m_Dlc = new Colossal.PSI.Common.DlcId(-2009);
+                prefabSystem.AddPrefab(contentPrefabNew);
+                contentPrefab = contentPrefabNew;
+            }
+            prefabSystem.TryGetEntity(contentPrefab, out Entity contentPrefabEntity);
+            if (!assetPacks.ContainsKey(name))
+                assetPacks.Add(name, contentPrefabEntity);
         }
     }
 }

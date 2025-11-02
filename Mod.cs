@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using AssetUIManager.Systems;
 using Colossal.IO.AssetDatabase;
@@ -9,7 +8,6 @@ using Colossal.UI;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
-using Game.UI.Menu;
 using StarQ.Shared.Extensions;
 using Unity.Entities;
 
@@ -39,20 +37,14 @@ namespace AssetUIManager
             UIHostHelper.Init(Id, uiHostName);
 
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
-                UIManager.defaultUISystem.AddHostLocation(
-                    uiHostName,
-                    Path.Combine(Path.GetDirectoryName(asset.path), "Icons"),
-                    false
-                );
+                UIHostHelper.LoadUIHost(asset);
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(AssetUIManager), m_Setting, new Setting(this));
 
-            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
-            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
-            updateSystem.UpdateBefore<UIManagerSystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateBefore<AssetPackSystem>(SystemUpdatePhase.UIUpdate);
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
         }
 
         public void OnDispose()
@@ -117,6 +109,22 @@ namespace AssetUIManager
                     {
                         LocaleHelper.GetSubserviceName("StarQ_UIC RoadsParkingRoads"),
                         LocaleHelper.GetServiceName("Roads"),
+                    }
+                },
+                {
+                    "SeparatedPocketParks",
+                    new List<string>()
+                    {
+                        LocaleHelper.GetSubserviceName("StarQ_UIC PocketParks"),
+                        LocaleHelper.GetServiceName("Parks & Recreation"),
+                    }
+                },
+                {
+                    "SeparatedCityParks",
+                    new List<string>()
+                    {
+                        LocaleHelper.GetSubserviceName("StarQ_UIC CityParks"),
+                        LocaleHelper.GetServiceName("Parks & Recreation"),
                     }
                 },
             };
