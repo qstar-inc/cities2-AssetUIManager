@@ -43,12 +43,17 @@ namespace AssetUIManager
             m_Setting.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(AssetUIManager), m_Setting, new Setting(this));
 
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<DataCollectionSystem>();
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
         }
 
         public void OnDispose()
         {
+            //    if (DataCollectionSystem.assetMenuDataDict.IsCreated)
+            //        DataCollectionSystem.assetMenuDataDict.Dispose();
+            //    if (DataCollectionSystem.assetCatDataDict.IsCreated)
+            //        DataCollectionSystem.assetCatDataDict.Dispose();
             //log.Info(nameof(OnDispose));
             if (m_Setting != null)
             {

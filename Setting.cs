@@ -101,6 +101,7 @@ namespace AssetUIManager
             SeparatedPolice = true;
             SeparatedPocketParks = true;
             SeparatedCityParks = true;
+            BaseGameAssetPacks = true;
             EnableAssetPacks = true;
         }
 

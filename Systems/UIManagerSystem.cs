@@ -15,7 +15,6 @@ namespace AssetUIManager.Systems
     public partial class UIManagerSystem : GameSystemBase
     {
         public bool NeedUpdate = false;
-        public bool DataCollected = false;
 
         public class AssetMenuData
         {
@@ -25,18 +24,17 @@ namespace AssetUIManager.Systems
 
 #nullable disable
         private PrefabSystem prefabSystem;
-        private EntityQuery uiAssetMenuDataQuery;
-        private EntityQuery uiAssetCategoryDataQuery;
         private EntityQuery roadQuery;
         private EntityQuery bridgeQuery;
         private EntityQuery hospitalQuery;
         private EntityQuery educationQuery;
         private EntityQuery policeQuery;
         private EntityQuery parkQuery;
+
 #nullable enable
-        public static Dictionary<string, Entity> assetMenuDataDict = new();
-        public static Dictionary<string, Entity> assetCatDataDict = new();
-        public static Dictionary<string, int> roadMenuPriority = new();
+        //public static Dictionary<string, Entity> assetMenuDataDict = new();
+        //public static Dictionary<string, Entity> assetCatDataDict = new();
+        //public static Dictionary<string, int> roadMenuPriority = new();
         public static AssetMenuData pedStreetAssetMenuData = new();
         public static AssetMenuData bridgesAssetMenuData = new();
         public static AssetMenuData parkingRoadAssetMenuData = new();
@@ -45,21 +43,21 @@ namespace AssetUIManager.Systems
         public static AssetMenuData policeAssetMenuData = new();
         public static AssetMenuData parksAssetMenuData = new();
 
-        public static List<KeyValuePair<string, int>> GetRoadMenuPriority()
-        {
-            var sortedList = roadMenuPriority.OrderBy(pair => pair.Value).ToList();
-            return sortedList;
-        }
+        //public static List<KeyValuePair<string, int>> GetRoadMenuPriority()
+        //{
+        //    var sortedList = roadMenuPriority.OrderBy(pair => pair.Value).ToList();
+        //    return sortedList;
+        //}
 
         protected override void OnCreate()
         {
             base.OnCreate();
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            uiAssetMenuDataQuery = SystemAPI.QueryBuilder().WithAll<UIAssetMenuData>().Build();
-            uiAssetCategoryDataQuery = SystemAPI
-                .QueryBuilder()
-                .WithAll<UIAssetCategoryData>()
-                .Build();
+            //uiAssetMenuDataQuery = SystemAPI.QueryBuilder().WithAll<UIAssetMenuData>().Build();
+            //uiAssetCategoryDataQuery = SystemAPI
+            //    .QueryBuilder()
+            //    .WithAll<UIAssetCategoryData>()
+            //    .Build();
             roadQuery = SystemAPI.QueryBuilder().WithAll<RoadData>().WithNone<BridgeData>().Build();
             bridgeQuery = SystemAPI
                 .QueryBuilder()
@@ -77,7 +75,6 @@ namespace AssetUIManager.Systems
 
             Mod.m_Setting.onSettingsApplied += OnSettingsChanged;
             NeedUpdate = true;
-            CollectData();
         }
 
         protected override void OnUpdate() { }
@@ -104,76 +101,12 @@ namespace AssetUIManager.Systems
 
         public void RefreshOrDisable()
         {
-            CollectData();
-            //if (Mod.m_Setting.IsGame)
-            //{
-            //Mod.m_Setting.PathwayPriorityDropdownVersion++;
+            DataCollectionSystem.CollectData();
             RefreshUI();
             //    return;
             //}
 
             //DisableUI();
-        }
-
-        public void CollectData()
-        {
-            if (DataCollected)
-                return;
-            LogHelper.SendLog("Collecting Data", LogLevel.DEV);
-            try
-            {
-                var entities = uiAssetMenuDataQuery.ToEntityArray(Allocator.Temp);
-                foreach (Entity entity in entities)
-                {
-                    string prefabName = prefabSystem.GetPrefabName(entity);
-                    if (!assetMenuDataDict.ContainsKey(prefabName))
-                        assetMenuDataDict.Add(prefabName, entity);
-
-                    if (prefabName == "Roads")
-                    {
-                        DynamicBuffer<UIGroupElement> assetMenuBuffer =
-                            EntityManager.GetBuffer<UIGroupElement>(entity);
-
-                        for (int i = 0; i < assetMenuBuffer.Length; i++)
-                        {
-                            Entity uge = assetMenuBuffer[i].m_Prefab;
-                            var name = prefabSystem.GetPrefabName(uge);
-                            prefabSystem.TryGetPrefab(uge, out PrefabBase prefabBase);
-                            prefabBase.TryGet(out UIObject ubj);
-                            if (!roadMenuPriority.ContainsKey(name))
-                                roadMenuPriority.Add(name, ubj.m_Priority);
-
-                            //LogHelper.SendLog(
-                            //    $"Adding {name} to roadMenuPriority as {ubj.m_Priority}"
-                            //);
-                        }
-                    }
-                }
-                //Mod.m_Setting.PathwayPriorityDropdownVersion++;
-            }
-            catch (Exception e)
-            {
-                LogHelper.SendLog(e, LogLevel.Error);
-            }
-
-            try
-            {
-                var entities = uiAssetCategoryDataQuery.ToEntityArray(Allocator.Temp);
-                foreach (Entity entity in entities)
-                {
-                    string prefabName = prefabSystem.GetPrefabName(entity);
-                    if (!assetCatDataDict.ContainsKey(prefabName))
-                        assetCatDataDict.Add(prefabName, entity);
-
-                    //LogHelper.SendLog($"Adding {prefabName} to assetCatDataDict");
-                }
-            }
-            catch (Exception e)
-            {
-                LogHelper.SendLog(e, LogLevel.Error);
-            }
-            DataCollected = true;
-            LogHelper.SendLog("Collecting Data completed", LogLevel.DEV);
         }
 
         public void RefreshUI()
@@ -340,7 +273,7 @@ namespace AssetUIManager.Systems
         {
             try
             {
-                string Neighbor;
+                FixedString64Bytes Neighbor;
                 if (yes)
                 {
                     Neighbor = "RoadsSmallRoads";
@@ -351,8 +284,8 @@ namespace AssetUIManager.Systems
                     priority = type == 2 ? 31 : 30;
                 }
 
-                string itemName = type == 2 ? "PiersAndQuays" : "Pathways";
-                Entity itemValue = assetCatDataDict[itemName];
+                FixedString64Bytes itemName = type == 2 ? "PiersAndQuays" : "Pathways";
+                DataCollectionSystem.assetCatDataDict.TryGetValue(itemName, out Entity itemValue);
                 if (
                     EntityManager.TryGetComponent(itemValue, out PrefabData prefabData)
                     && prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase)
@@ -361,7 +294,7 @@ namespace AssetUIManager.Systems
                 )
                 {
                     EntityManager.TryGetComponent(
-                        assetCatDataDict[Neighbor],
+                        DataCollectionSystem.assetCatDataDict[Neighbor],
                         out UIAssetCategoryData newCat
                     );
 
@@ -437,7 +370,8 @@ namespace AssetUIManager.Systems
 
                 try
                 {
-                    Entity hospitalCat = assetCatDataDict["Healthcare"];
+                    FixedString64Bytes key = "Healthcare";
+                    DataCollectionSystem.assetCatDataDict.TryGetValue(key, out Entity hospitalCat);
                     var entities = hospitalQuery.ToEntityArray(Allocator.Temp);
                     foreach (Entity entity in entities)
                     {
@@ -596,7 +530,8 @@ namespace AssetUIManager.Systems
 
                 try
                 {
-                    Entity educationCat = assetCatDataDict["Education"];
+                    FixedString64Bytes key = "Education";
+                    DataCollectionSystem.assetCatDataDict.TryGetValue(key, out Entity educationCat);
                     var entities = educationQuery.ToEntityArray(Allocator.Temp);
                     foreach (Entity entity in entities)
                     {
@@ -732,7 +667,8 @@ namespace AssetUIManager.Systems
 
                 try
                 {
-                    Entity policeCat = assetCatDataDict["Police"];
+                    FixedString64Bytes key = "Police";
+                    DataCollectionSystem.assetCatDataDict.TryGetValue(key, out Entity policeCat);
                     var entities = policeQuery.ToEntityArray(Allocator.Temp);
                     foreach (Entity entity in entities)
                     {
@@ -854,11 +790,11 @@ namespace AssetUIManager.Systems
 
         public void ProcessMovingAssets(
             bool enabled,
-            string UIAssetCategoryName,
+            FixedString64Bytes UIAssetCategoryName,
             string UIAssetMenuName,
             string UIAssetCategoryIcon,
             int UIAssetCategoryPriority,
-            string sectionName,
+            FixedString64Bytes sectionName,
             EntityQuery entityQuery,
             AssetMenuData assetMenuData,
             string processType,
@@ -931,7 +867,7 @@ namespace AssetUIManager.Systems
                                 try
                                 {
                                     string laneName = prefabSystem.GetPrefabName(item.m_Section);
-                                    if (laneName.Contains(sectionName))
+                                    if (laneName.Contains(sectionName.ToString()))
                                     {
                                         isValid = true;
                                         break;
@@ -1041,7 +977,7 @@ namespace AssetUIManager.Systems
             {
                 if (
                     prefabSystem.TryGetPrefab(
-                        new PrefabID("UIAssetCategoryPrefab", UIAssetCategoryName),
+                        new PrefabID("UIAssetCategoryPrefab", UIAssetCategoryName.ToString()),
                         out PrefabBase tab
                     )
                 )
@@ -1086,7 +1022,7 @@ namespace AssetUIManager.Systems
                                 foreach (NetGeometrySection item in x)
                                 {
                                     string laneName = prefabSystem.GetPrefabName(item.m_Section);
-                                    if (laneName.Contains(sectionName))
+                                    if (laneName.Contains(sectionName.ToString()))
                                     {
                                         isValid = true;
                                         break;
@@ -1115,23 +1051,25 @@ namespace AssetUIManager.Systems
         }
 
         public Entity CreateUIAssetCategoryPrefab(
-            string name,
-            string group,
+            FixedString64Bytes name,
+            FixedString64Bytes group,
             string icon,
             int priority
         )
         {
             if (
                 !prefabSystem.TryGetPrefab(
-                    new PrefabID("UIAssetCategoryPrefab", name),
+                    new PrefabID("UIAssetCategoryPrefab", name.ToString()),
                     out PrefabBase tab
                 )
             )
             {
                 UIAssetCategoryPrefab menuPrefab =
                     ScriptableObject.CreateInstance<UIAssetCategoryPrefab>();
-                menuPrefab.name = name;
-                EntityManager.TryGetComponent(assetMenuDataDict[group], out PrefabData prefabData);
+                menuPrefab.name = name.ToString();
+
+                DataCollectionSystem.assetMenuDataDict.TryGetValue(group, out Entity groupEntity);
+                EntityManager.TryGetComponent(groupEntity, out PrefabData prefabData);
                 prefabSystem.TryGetPrefab(prefabData, out PrefabBase roadMenu);
 
                 menuPrefab.m_Menu = roadMenu.GetComponent<UIAssetMenuPrefab>();
@@ -1152,14 +1090,14 @@ namespace AssetUIManager.Systems
         public void RefreshBuffer(
             Entity oldCat,
             Entity newCat,
-            string moverName,
+            FixedString64Bytes moverName,
             Entity moverEntity
         )
         {
             DynamicBuffer<UIGroupElement> uiGroupElementbuffer =
                 EntityManager.GetBuffer<UIGroupElement>(oldCat);
 
-            var itemName = prefabSystem.GetPrefabName(moverEntity);
+            //var itemName = prefabSystem.GetPrefabName(moverEntity);
             //var tabNameOld = prefabSystem.GetPrefabName(oldCat);
             for (int i = 0; i < uiGroupElementbuffer.Length; i++)
             {
@@ -1173,13 +1111,13 @@ namespace AssetUIManager.Systems
                 }
             }
 
-            var tabNameNew = prefabSystem.GetPrefabName(newCat);
+            //var tabNameNew = prefabSystem.GetPrefabName(newCat);
             EntityManager.GetBuffer<UIGroupElement>(newCat).Add(new UIGroupElement(moverEntity));
             EntityManager
                 .GetBuffer<UnlockRequirement>(newCat)
                 .Add(new UnlockRequirement(moverEntity, UnlockFlags.RequireAny));
             //if (log)
-            LogHelper.SendLog($"Adding {itemName} to {tabNameNew}");
+            //LogHelper.SendLog($"Adding {itemName} to {tabNameNew}");
         }
     }
 }

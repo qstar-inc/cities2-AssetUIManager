@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Colossal;
 using Colossal.Entities;
+using Colossal.Json;
+using Colossal.PSI.Common;
 using Colossal.Serialization.Entities;
 using Game;
-using Game.Buildings;
 using Game.Prefabs;
 using StarQ.Shared.Extensions;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using UnityEngine;
 
 namespace AssetUIManager.Systems
@@ -32,7 +36,7 @@ namespace AssetUIManager.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-            prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            prefabSystem = WorldHelper.prefabSystem;
             allAssets = SystemAPI
                 .QueryBuilder()
                 .WithAll<PrefabData>()
@@ -73,34 +77,13 @@ namespace AssetUIManager.Systems
         protected override void OnGamePreload(Purpose purpose, GameMode mode)
         {
             base.OnGamePreload(purpose, mode);
-            RefreshOrDisable();
+            RefreshUI();
         }
-
-        //protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
-        //{
-        //    base.OnGameLoadingComplete(purpose, mode);
-        //    //Mod.m_Setting.IsGame = mode.IsGame();
-        //    //RefreshOrDisable();
-        //    //RefreshUI();
-        //}
 
         private void OnSettingsChanged(Game.Settings.Setting setting)
         {
             NeedUpdate = true;
-            RefreshOrDisable();
-        }
-
-        public void RefreshOrDisable()
-        {
-            //if (Mod.m_Setting.IsGame)
-            //{
-            //Mod.m_Setting.PathwayPriorityDropdownVersion++;
-            CreateAssetPacksInBulk();
             RefreshUI();
-            //    return;
-            //}
-
-            //DisableUI();
         }
 
         public void CreateAssetPacksInBulk()
@@ -181,14 +164,17 @@ namespace AssetUIManager.Systems
         {
             if (enabled)
             {
+                List<string> addeds = new();
                 try
                 {
                     PrefabBase? contentPrefab = null;
                     if (packName == "BaseGame")
+                    {
                         prefabSystem.TryGetPrefab(
-                            new PrefabID("ContentPrefab", "StarQ_CP BaseGame"),
+                            new PrefabID("ContentPrefab", $"StarQ_CP {packName}"),
                             out contentPrefab
                         );
+                    }
 
                     Entity apEntity = assetPacks[packName];
                     if (apEntity == null)
@@ -197,42 +183,79 @@ namespace AssetUIManager.Systems
                         return;
                     }
                     var entities = entityQuery.ToEntityArray(Allocator.Temp);
-                    foreach (Entity entity in entities)
+                    var results = new NativeArray<byte>(entities.Length, Allocator.TempJob);
+
+                    if (packName == "BaseGame")
+                        for (int i = 0; i < entities.Length; i++)
+                            results[i] = 1;
+                    else
                     {
-                        if (
-                            packName != "BaseGame"
-                            && EntityManager.TryGetComponent(entity, out UIObjectData uiObj)
-                            && uiObj.m_Group == null
-                        )
+                        var job = new FilterJob
+                        {
+                            entities = entities,
+                            uiDataLookup = SystemAPI.GetComponentLookup<UIObjectData>(true),
+                            results = results,
+                        };
+
+                        job.Schedule(entities.Length, 32).Complete();
+                    }
+
+                    LogHelper.SendLog($"Checking {entities.Length} for {packName}", LogLevel.DEV);
+                    for (int i = 0; i < entities.Length; i++)
+                    {
+                        if (results[i] == 0)
+                            continue;
+
+                        var entity = entities[i];
+
+                        //if (
+                        //    packName != "BaseGame"
+                        //    && EntityManager.TryGetComponent(entity, out UIObjectData uiObj)
+                        //    && uiObj.m_Group == null
+                        //)
+                        //    continue;
+
+                        if (!prefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase))
                             continue;
 
                         if (packName == "BaseGame")
                         {
-                            if (prefabSystem.TryGetPrefab(entity, out PrefabBase pb))
-                            {
-                                if (
-                                    !(
-                                        pb is ZonePrefab
-                                        || pb is ObjectPrefab
-                                        || pb is NetPrefab
-                                        || pb is AreaPrefab
-                                        || pb is RoutePrefab
-                                        || pb is NetLanePrefab
-                                    )
-                                )
-                                    continue;
+                            if (!prefabBase.builtin)
+                                continue;
 
-                                if (
-                                    !(
-                                        pb.asset == null
-                                        || (
-                                            pb.asset != null
-                                            && pb.asset.path.Contains("/Cities2_Data/Content/")
-                                        )
-                                    )
-                                )
-                                    continue;
+                            if (contentPrefab != null)
+                            {
+                                ContentPrerequisite cpd =
+                                    ScriptableObject.CreateInstance<ContentPrerequisite>();
+                                cpd.m_ContentPrerequisite = contentPrefab as ContentPrefab;
+                                prefabBase.AddComponentFrom(cpd);
                             }
+
+                            if (
+                                !(
+                                    prefabBase is ZonePrefab
+                                    || prefabBase is ObjectPrefab
+                                    || prefabBase is NetPrefab
+                                    || prefabBase is AreaPrefab
+                                    || prefabBase is RoutePrefab
+                                    || prefabBase is NetLanePrefab
+                                )
+                            )
+                                continue;
+
+                            //if (
+                            //    !(
+                            //        pb.asset == null
+                            //        || (
+                            //            pb.asset != null
+                            //            && pb.asset.path.Contains("/Cities2_Data/Content/")
+                            //        )
+                            //    )
+                            //)
+                            //{
+                            //    continue;
+                            //}
+                            //addeds.Add(pb.ToJSONString());
                         }
 
                         AssetPackElement app = new() { m_Pack = apEntity };
@@ -258,7 +281,7 @@ namespace AssetUIManager.Systems
                         if (!contains)
                             apEBuffer.Add(app);
 
-                        string entityName = prefabSystem.GetPrefabName(entity);
+                        //string entityName = prefabSystem.GetPrefabName(entity);
                         //LogHelper.SendLog($"Adding {entityName} to {packName}");
 
                         //if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
@@ -274,41 +297,50 @@ namespace AssetUIManager.Systems
                         //    }
                         //}
 
-                        EntityManager.TryGetComponent(apEntity, out PrefabData apData);
-                        prefabSystem.TryGetPrefab(apData, out AssetPackPrefab apPrefab);
+                        //EntityManager.TryGetComponent(apEntity, out PrefabData apData);
+                        prefabSystem.TryGetPrefab(apEntity, out AssetPackPrefab apPrefab);
 
-                        EntityManager.TryGetComponent(entity, out PrefabData prefabData);
-                        prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase);
-                        AssetPackItem api = prefabBase.GetComponent<AssetPackItem>();
+                        AssetPackItem api = prefabBase.AddOrGetComponent<AssetPackItem>();
 
-                        if (apPrefab != null)
+                        //LogHelper.SendLog(prefabSystem.GetPrefabName(entity));
+                        //LogHelper.SendLog(apPrefab != null);
+                        //LogHelper.SendLog(api != null);
+                        //LogHelper.SendLog($"{api?.m_Packs?.Length}");
+                        //LogHelper.SendLog(!api.m_Packs.Length);
+                        //LogHelper.SendLog(api != null);
+                        //LogHelper.SendLog(api != null);
+                        //LogHelper.SendLog(api != null);
+                        //LogHelper.SendLog(api != null);
+                        //LogHelper.SendLog(api != null);
+
+                        if (apPrefab != null && api != null)
                         {
-                            if (api != null && !api.m_Packs.Contains(apPrefab))
+                            bool create = false;
+                            if (api.m_Packs == null)
                             {
-                                Array.Resize(ref api.m_Packs, api.m_Packs.Length + 1);
-                                api.m_Packs[^1] = apPrefab;
+                                create = true;
+                            }
+
+                            if (create)
+                            {
+                                api.m_Packs = new AssetPackPrefab[] { apPrefab };
                             }
                             else
                             {
-                                AssetPackItem ap = ScriptableObject.CreateInstance<AssetPackItem>();
-                                ap.m_Packs = new AssetPackPrefab[] { apPrefab };
-                                prefabBase.AddComponentFrom(ap);
+                                Array.Resize(ref api.m_Packs, api.m_Packs?.Length + 1 ?? 0);
+                                api.m_Packs[^1] = apPrefab;
                             }
-                        }
-
-                        if (contentPrefab != null)
-                        {
-                            ContentPrerequisite cpd =
-                                ScriptableObject.CreateInstance<ContentPrerequisite>();
-                            cpd.m_ContentPrerequisite = contentPrefab as ContentPrefab;
-                            prefabBase.AddComponentFrom(cpd);
+                            addeds.Add(prefabSystem.GetPrefabName(entity));
                         }
                     }
+                    results.Dispose();
                 }
                 catch (Exception e)
                 {
                     LogHelper.SendLog(e, LogLevel.Error);
                 }
+                if (addeds.Count > 0)
+                    LogHelper.SendLog($"\n{string.Join("\n", addeds)}", LogLevel.DEV);
             }
             else
             {
@@ -402,8 +434,26 @@ namespace AssetUIManager.Systems
                         return;
                     }
                     var entities = entityQuery.ToEntityArray(Allocator.Temp);
-                    foreach (Entity entity in entities)
+                    var results = new NativeArray<byte>(entities.Length, Allocator.TempJob);
+
+                    var job = new FilterJob
                     {
+                        entities = entities,
+                        uiDataLookup = SystemAPI.GetComponentLookup<UIObjectData>(true),
+                        results = results,
+                    };
+
+                    job.Schedule(entities.Length, 32).Complete();
+
+                    LogHelper.SendLog($"Checking {entities.Length} for {packName}", LogLevel.DEV);
+                    List<string> addeds = new();
+                    for (int i = 0; i < entities.Length; i++)
+                    {
+                        if (results[i] == 0)
+                            continue;
+
+                        Entity entity = entities[i];
+
                         if (
                             EntityManager.TryGetComponent(entity, out UIObjectData uiObj)
                             && uiObj.m_Group == null
@@ -454,18 +504,18 @@ namespace AssetUIManager.Systems
 
                         //LogHelper.SendLog($"Adding {entityName} to {packName}");
 
-                        if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
-                        {
-                            try
-                            {
-                                LogHelper.SendLog($"Has {apd}");
-                            }
-                            catch (Exception ex)
-                            {
-                                LogHelper.SendLog(entity.GetType().Name);
-                                LogHelper.SendLog(ex);
-                            }
-                        }
+                        //if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
+                        //{
+                        //    try
+                        //    {
+                        //        LogHelper.SendLog($"Has {apd}");
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        LogHelper.SendLog(entity.GetType().Name);
+                        //        LogHelper.SendLog(ex);
+                        //    }
+                        //}
 
                         EntityManager.TryGetComponent(apEntity, out PrefabData apData);
                         prefabSystem.TryGetPrefab(apData, out AssetPackPrefab apPrefab);
@@ -480,6 +530,7 @@ namespace AssetUIManager.Systems
                             prefabBase.AddComponentFrom(ap);
                         }
                     }
+                    results.Dispose();
                 }
                 catch (Exception e)
                 {
@@ -556,8 +607,7 @@ namespace AssetUIManager.Systems
                 assetPack = assetPackPrefab;
             }
             prefabSystem.TryGetEntity(assetPack, out Entity assetPackEntity);
-            if (!assetPacks.ContainsKey(name))
-                assetPacks.Add(name, assetPackEntity);
+            assetPacks.TryAdd(name, assetPackEntity);
         }
 
         public void CreateContentPrefab(string name)
@@ -565,7 +615,7 @@ namespace AssetUIManager.Systems
             if (
                 !prefabSystem.TryGetPrefab(
                     new PrefabID("ContentPrefab", $"StarQ_CP {name}"),
-                    out PrefabBase contentPrefab
+                    out PrefabBase _
                 )
             )
             {
@@ -577,11 +627,36 @@ namespace AssetUIManager.Systems
                 dlc.m_BaseGameRequiresDatabase = false;
                 dlc.m_Dlc = new Colossal.PSI.Common.DlcId(-2009);
                 prefabSystem.AddPrefab(contentPrefabNew);
-                contentPrefab = contentPrefabNew;
             }
-            prefabSystem.TryGetEntity(contentPrefab, out Entity contentPrefabEntity);
-            if (!assetPacks.ContainsKey(name))
-                assetPacks.Add(name, contentPrefabEntity);
+        }
+
+        [BurstCompile]
+        public struct FilterJob : IJobParallelFor
+        {
+            [ReadOnly]
+            public NativeArray<Entity> entities;
+
+            [ReadOnly]
+            public ComponentLookup<UIObjectData> uiDataLookup;
+
+            public NativeArray<byte> results;
+
+            public void Execute(int index)
+            {
+                Entity e = entities[index];
+
+                if (uiDataLookup.HasComponent(e))
+                {
+                    var uiObj = uiDataLookup[e];
+                    if (uiObj.m_Group == Entity.Null)
+                    {
+                        results[index] = 0;
+                        return;
+                    }
+                }
+
+                results[index] = 1;
+            }
         }
     }
 }
