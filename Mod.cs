@@ -93,6 +93,15 @@ namespace AssetUIManager
                         LocaleHelper.GetServiceName("Landscaping"),
                     }
                 },
+                {
+                    "BikewayInRoads",
+                    new List<string>()
+                    {
+                        LocaleHelper.GetSubserviceName("BikePaths"),
+                        LocaleHelper.GetServiceName("Roads"),
+                        LocaleHelper.GetServiceName("Landscaping"),
+                    }
+                },
             };
 
             var XinXMenu_Label = LocaleHelper.Translate($"{Id}.Mod.XinXMenu_Label");

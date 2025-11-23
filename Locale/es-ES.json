@@ -3,10 +3,8 @@
   "Options.OPTION_DESCRIPTION[AssetUIManager.AssetUIManager.Mod.Setting.PedestrianInPathway]": "Move all **Pedestrian Streets** to the **{AssetUIManager.Replacement.Pathway}** tab.",
   "Options.OPTION[AssetUIManager.AssetUIManager.Mod.Setting.SeparateControlAndResearch]": "Separated Disease Control and Health Research Tabs",
   "Options.OPTION_DESCRIPTION[AssetUIManager.AssetUIManager.Mod.Setting.SeparateControlAndResearch]": "Move **Disease Control Centers** and **Health Research Institutes** to own new tabs.",
-  "Options.OPTION[AssetUIManager.AssetUIManager.Mod.Setting.BaseGameAssetPacks]": "Base Game Packs",
-  "Options.OPTION_DESCRIPTION[AssetUIManager.AssetUIManager.Mod.Setting.BaseGameAssetPacks]": "Show **Base Game** asset packs for all vanilla assets\nRequires reloading into the save for disabling.",
   "Options.OPTION[AssetUIManager.AssetUIManager.Mod.Setting.EnableAssetPacks]": "Asset Packs",
-  "Options.OPTION_DESCRIPTION[AssetUIManager.AssetUIManager.Mod.Setting.EnableAssetPacks]": "Add asset packs for the following types of assets:\n- Transport Depot\n- Public Transport\n- Cargo Transport\n- Transport Lane\n- Bicycle Stop\nRequires reloading into the save for disabling.",
+  "Options.OPTION_DESCRIPTION[AssetUIManager.AssetUIManager.Mod.Setting.EnableAssetPacks]": "Add asset packs for the following types of assets:\n- Base Game\n- Transport Depot\n- Public Transport\n- Cargo Transport\n- Transport Lane\nRequires reloading into the save for disabling.",
   "AssetUIManager.Mod.XinXMenu_Label": "{1} tab in {2} menu",
   "AssetUIManager.Mod.XinXMenu_Desc": "Move the **{1}** tabs to the **{2}** menu instead of **{3}** menu.",
   "AssetUIManager.Mod.SeparatedTabs_Label": "Separated {1} tabs",
@@ -53,8 +51,6 @@
   "Assets.DESCRIPTION[StarQ_AP CargoTransport]": "Cargo Transport",
   "Assets.NAME[StarQ_AP TransportLane]": "Transport Lane",
   "Assets.DESCRIPTION[StarQ_AP TransportLane]": "Transport Lane",
-  "Assets.NAME[StarQ_AP BicycleStop]": "Bicycle Stop",
-  "Assets.DESCRIPTION[StarQ_AP BicycleStop]": "Bicycle Stop",
   "Assets.NAME[StarQ_AP BaseGame]": "Base Game",
   "Assets.DESCRIPTION[StarQ_AP BaseGame]": "Base Game"
 }

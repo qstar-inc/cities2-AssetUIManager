@@ -7,8 +7,9 @@ Tired of scrolling the asset UI clogged with so many assets? Can't find the spec
 
 Asset UI Manager can reposition elements in the ... Asset UI.
 ## Features
-* Move the Pathway tabs to the Roads menu instead of Terraforming.
-* Move the Piers And Quay tabs to the Roads menu instead of Terraforming.
+* Move the Pathway tab to the Roads menu instead of Terraforming.
+* Move the Piers And Quay tab to the Roads menu instead of Terraforming.
+* Move the Bicycle Paths And Quay tab to the Roads menu instead of Terraforming.
 * Move all Pedestrian Streets to the Pathway tab.
 * Move all Bridges to a new tab in the Roads Menu.
 * Move all Parking Roads to a new tab in the Roads Menu.
@@ -18,7 +19,7 @@ Asset UI Manager can reposition elements in the ... Asset UI.
 * Move all Pocket Parks to new tabs in the Parks &amp; Recreation menu.
 * Move all City Parks to new tabs in the Parks &amp; Recreation menu.
 * Add Base Game Asset Pack and Content (DLC Icon) for all base game assets. (uses icon from Unified Icon Library)
-* Add Asset Pack: Transport Depots, Transport Stops, Cargo Transport, Transport Lane.
+* Add Asset Pack: Transport Depots, Transport Stops, Cargo Transport, Transport Lane, Bicycle Stop.
 (All other **options** are __optional__ can be enabled and disabled on the fly. Disabling Asset Packs might require reloading the save.)
 * [Removed as of game version 1.3.3f1] ~~AUTO: Sort Asset UpgradesUI panel to sort the list in accordance to it's `m_Priority`.~~
 
@@ -40,12 +41,14 @@ Asset UI Manager can reposition elements in the ... Asset UI.
   <Screenshot Value="Properties/Screenshot06.jpg" />
   <Tag Value="Code Mod" />
   <ForumLink Value="" />
-  <ModVersion Value="1.2.6" />
-  <GameVersion Value="1.3.6*" />
+  <ModVersion Value="1.2.7" />
+  <GameVersion Value="1.4.2*" />
   <Dependency Id="74417" />
   <!-- Unified Icon Library -->
   <ChangeLog>
-- Reenabled Base Game "DLC" pack system.
+- Add Bicycle Stop pack filter on the Parking tab.
+- Add move Bicycle Paths And Quay tab to the Roads menu instead of Terraforming
+- Rename `StarQ_CP BaseGame` to the mod's name to be more informative.
 	</ChangeLog>
   <ExternalLink
     Type="discord"

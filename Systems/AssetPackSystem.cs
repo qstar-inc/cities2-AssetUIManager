@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using Colossal;
 using Colossal.Entities;
-using Colossal.Json;
 using Colossal.PSI.Common;
 using Colossal.Serialization.Entities;
 using Game;
@@ -23,49 +22,29 @@ namespace AssetUIManager.Systems
 #nullable disable
         private PrefabSystem prefabSystem;
         private EntityQuery allAssets;
-        private EntityQuery transportDepot;
-        private EntityQuery publicTransportStation;
-        private EntityQuery publicTransportStop;
-        private EntityQuery publicTransportNetwork;
-        private EntityQuery cargoTransportStation;
-        private EntityQuery lineTool;
+
 #nullable enable
         private static int priority = 1750;
         public static Dictionary<string, Entity> assetPacks = new();
+        public static GameMode gameMode;
+        public static bool isSet = false;
+        public static Dictionary<PrefabBase, PrefabPackChanges> _changes = new();
+
+        public class PrefabPackChanges
+        {
+            public Entity PrefabBaseEntity = Entity.Null;
+            public List<string> AddedPackPrefabs = new();
+            public bool ContentPrerequisiteAdded = false;
+        }
 
         protected override void OnCreate()
         {
             base.OnCreate();
-            prefabSystem = WorldHelper.prefabSystem;
+            prefabSystem = WorldHelper.PrefabSystem;
             allAssets = SystemAPI
                 .QueryBuilder()
                 .WithAll<PrefabData>()
-                .WithNone<ContentPrerequisiteData>()
-                .Build();
-            transportDepot = SystemAPI
-                .QueryBuilder()
-                .WithAll<TransportDepotData, BuildingData, UIObjectData>()
-                .WithNone<ServiceUpgradeData>()
-                .Build();
-            publicTransportStation = SystemAPI
-                .QueryBuilder()
-                .WithAll<PublicTransportStationData, BuildingData, UIObjectData>()
-                .WithNone<ServiceUpgradeData>()
-                .Build();
-            publicTransportStop = SystemAPI
-                .QueryBuilder()
-                .WithAll<TransportStopData, UIObjectData>()
-                .WithNone<ServiceUpgradeData>()
-                .Build();
-            publicTransportNetwork = SystemAPI
-                .QueryBuilder()
-                .WithAny<RoadData, TrackData, UIObjectData>()
-                .Build();
-            lineTool = SystemAPI.QueryBuilder().WithAll<TransportLineData>().Build();
-            cargoTransportStation = SystemAPI
-                .QueryBuilder()
-                .WithAll<CargoTransportStationData, BuildingData, UIObjectData>()
-                .WithNone<ServiceUpgradeData>()
+                .WithAny<ZoneData, ObjectData, NetData, AreaData, RouteData, NetLaneData>()
                 .Build();
             Mod.m_Setting.onSettingsApplied += OnSettingsChanged;
             CreateAssetPacksInBulk();
@@ -77,389 +56,207 @@ namespace AssetUIManager.Systems
         protected override void OnGamePreload(Purpose purpose, GameMode mode)
         {
             base.OnGamePreload(purpose, mode);
-            RefreshUI();
+            gameMode = mode;
+            NeedUpdate = true;
+        }
+
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            RefreshOrDisable();
         }
 
         private void OnSettingsChanged(Game.Settings.Setting setting)
         {
             NeedUpdate = true;
-            RefreshUI();
+            RefreshOrDisable();
+        }
+
+        private void RefreshOrDisable()
+        {
+            if (gameMode.IsGame())
+                RefreshUI();
+            else
+                DisableUI();
+        }
+
+        public static class PacksToAdd
+        {
+            public const string BaseGame = "BaseGame";
+            public const string TransportDepot = "TransportDepot";
+            public const string PublicTransport = "PublicTransport";
+            public const string CargoTransport = "CargoTransport";
+            public const string TransportLane = "TransportLane";
+            public const string BicycleStop = "BicycleStop";
         }
 
         public void CreateAssetPacksInBulk()
         {
-            CreateContentPrefab("BaseGame");
-            CreateAssetPacks("BaseGame", UIHostHelper.DLC("Game"), -20);
-            CreateAssetPacks("TransportDepot", UIHostHelper.Icon("Depots"), 7700001);
-            CreateAssetPacks("PublicTransport", UIHostHelper.MGI("Transportation"), 7700002);
-            CreateAssetPacks("CargoTransport", UIHostHelper.MGI("DeliveryVan"), 7700003);
+            CreateContentPrefab();
+            CreateAssetPacks(PacksToAdd.BaseGame, UIHostHelper.DLC("Game"), -20);
+            CreateAssetPacks(PacksToAdd.TransportDepot, UIHostHelper.Icon("Depots"), 7700001);
             CreateAssetPacks(
-                "TransportLane",
+                PacksToAdd.PublicTransport,
+                UIHostHelper.MGI("Transportation"),
+                7700002
+            );
+            CreateAssetPacks(PacksToAdd.CargoTransport, UIHostHelper.MGI("DeliveryVan"), 7700003);
+            CreateAssetPacks(
+                PacksToAdd.TransportLane,
                 UIHostHelper.MGI("DoublePublicTransportLane"),
                 7700004
             );
+            CreateAssetPacks(PacksToAdd.BicycleStop, UIHostHelper.MGI("Bicycle"), 7700000);
         }
 
         public void RefreshUI()
         {
             if (Mod.m_Setting == null || !NeedUpdate)
                 return;
+            var stopWatch = Stopwatch.StartNew();
+
+            Dictionary<Entity, bool> sectionIsPublicTransport = new();
+
+            if (Mod.m_Setting.EnableAssetPacks)
+            {
+                EntityQuery netGeo = SystemAPI.QueryBuilder().WithAll<NetGeometryData>().Build();
+                var netGeoEntities = netGeo.ToEntityArray(Allocator.Temp);
+                foreach (var section in netGeoEntities)
+                {
+                    string name = prefabSystem.GetPrefabName(section);
+
+                    bool isPT = name.StartsWith("Public Transport") || name.Contains("Track");
+
+                    sectionIsPublicTransport.Add(section, isPT);
+                }
+            }
+
+            NativeParallelHashMap<Entity, byte> publicTransportSections = new(
+                sectionIsPublicTransport.Count,
+                Allocator.TempJob
+            );
+
+            foreach (var kv in sectionIsPublicTransport)
+                publicTransportSections.Add(kv.Key, kv.Value ? (byte)1 : (byte)0);
+
+            var entities = allAssets.ToEntityArray(Allocator.Temp);
+            NativeArray<byte> transportDepot = new(entities.Length, Allocator.TempJob);
+            NativeArray<byte> publicTransport = new(entities.Length, Allocator.TempJob);
+            NativeArray<byte> cargoTransport = new(entities.Length, Allocator.TempJob);
+            NativeArray<byte> transportLane = new(entities.Length, Allocator.TempJob);
+            NativeArray<byte> bicycleStop = new(entities.Length, Allocator.TempJob);
+            NativeArray<byte> baseGamePack = new(entities.Length, Allocator.TempJob);
+            NativeArray<byte> baseGameContent = new(entities.Length, Allocator.TempJob);
 
             try
             {
-                AddAssetPacks(Mod.m_Setting.BaseGameAssetPacks, "BaseGame", allAssets);
-                AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "TransportDepot", transportDepot);
-                AddAssetPacks(
-                    Mod.m_Setting.EnableAssetPacks,
-                    "PublicTransport",
-                    publicTransportStation
+                var job = new FilterJob
+                {
+                    entities = entities,
+
+                    uiDataLookup = SystemAPI.GetComponentLookup<UIObjectData>(true),
+                    prefabDataLookup = SystemAPI.GetComponentLookup<PrefabData>(true),
+                    zoneLookup = SystemAPI.GetComponentLookup<ZoneData>(true),
+                    objectLookup = SystemAPI.GetComponentLookup<ObjectData>(true),
+                    netLookup = SystemAPI.GetComponentLookup<NetData>(true),
+                    areaLookup = SystemAPI.GetComponentLookup<AreaData>(true),
+                    routeLookup = SystemAPI.GetComponentLookup<RouteData>(true),
+                    netLaneLookup = SystemAPI.GetComponentLookup<NetLaneData>(true),
+                    contentPrerequisiteLookup =
+                        SystemAPI.GetComponentLookup<ContentPrerequisiteData>(true),
+                    buildingLookup = SystemAPI.GetComponentLookup<BuildingData>(true),
+                    transportDepotLookup = SystemAPI.GetComponentLookup<TransportDepotData>(true),
+                    serviceUpgradeLookup = SystemAPI.GetComponentLookup<ServiceUpgradeData>(true),
+                    publicTransportStationLookup =
+                        SystemAPI.GetComponentLookup<PublicTransportStationData>(true),
+                    transportStopLookup = SystemAPI.GetComponentLookup<TransportStopData>(true),
+                    roadLookup = SystemAPI.GetComponentLookup<RoadData>(true),
+                    trackLookup = SystemAPI.GetComponentLookup<TrackData>(true),
+                    transportLineLookup = SystemAPI.GetComponentLookup<TransportLineData>(true),
+                    cargoTransportStationLookup =
+                        SystemAPI.GetComponentLookup<CargoTransportStationData>(true),
+                    parkingSpaceLookup = SystemAPI.GetComponentLookup<ParkingSpaceData>(true),
+                    parkingFacilityLookup = SystemAPI.GetComponentLookup<ParkingFacilityData>(true),
+                    netGeometrySectionLookup = SystemAPI.GetBufferLookup<NetGeometrySection>(true),
+                    sectionMap = publicTransportSections,
+
+                    transportDepot = transportDepot,
+                    publicTransport = publicTransport,
+                    cargoTransport = cargoTransport,
+                    transportLane = transportLane,
+                    bicycleStop = bicycleStop,
+                    baseGamePack = baseGamePack,
+                    baseGameContent = baseGameContent,
+                };
+
+                job.Schedule(entities.Length, 32).Complete();
+
+                prefabSystem.TryGetPrefab(
+                    new PrefabID("ContentPrefab", Mod.Name),
+                    out PrefabBase? contentPrefab
                 );
-                AddAssetPacks(
-                    Mod.m_Setting.EnableAssetPacks,
-                    "PublicTransport",
-                    publicTransportStop
-                );
-                AddAssetPacks(
-                    Mod.m_Setting.EnableAssetPacks,
-                    "CargoTransport",
-                    cargoTransportStation
-                );
-                AddAssetPacks(Mod.m_Setting.EnableAssetPacks, "TransportLane", lineTool);
-                AddAssetPacksToNetwork(
-                    Mod.m_Setting.EnableAssetPacks,
-                    "TransportLane",
-                    publicTransportNetwork
-                );
-            }
-            catch (Exception ex)
-            {
-                LogHelper.SendLog(ex, LogLevel.Error);
-            }
-            LogHelper.SendLog("Refresh Complete!");
-            NeedUpdate = false;
-        }
 
-        //public void DisableUI()
-        //{
-        //    try
-        //    {
-        //        AddAssetPacks(false, "BaseGame", allAssets);
-        //        AddAssetPacks(false, "TransportDepot", transportDepot);
-        //        AddAssetPacks(false, "PublicTransport", publicTransportStation);
-        //        AddAssetPacks(false, "PublicTransport", publicTransportStop);
-        //        AddAssetPacks(false, "CargoTransport", cargoTransportStation);
-        //        AddAssetPacks(false, "TransportLane", lineTool);
-        //        AddAssetPacksToNetwork(false, "TransportLane", publicTransportNetwork);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LogHelper.SendLog(ex, LogLevel.Error);
-        //    }
-        //    if (log)
-        //        LogHelper.SendLog("Disabling Complete!");
-        //    NeedUpdate = true;
-        //}
+                LogHelper.SendLog($"Filtered {entities.Length} items", LogLevel.DEV);
 
-        public void AddAssetPacks(bool enabled, string packName, EntityQuery entityQuery)
-        {
-            if (enabled)
-            {
-                List<string> addeds = new();
-                try
+                for (int i = 0; i < entities.Length; i++)
                 {
-                    PrefabBase? contentPrefab = null;
-                    if (packName == "BaseGame")
+                    bool isBaseGameContent =
+                        Mod.m_Setting.BaseGameAssetPacks && baseGameContent[i] == 1;
+                    bool isBaseGamePack = Mod.m_Setting.BaseGameAssetPacks && baseGamePack[i] == 1;
+                    bool isTransportDepot =
+                        Mod.m_Setting.EnableAssetPacks && transportDepot[i] == 1;
+                    bool isPublicTransport =
+                        Mod.m_Setting.EnableAssetPacks && publicTransport[i] == 1;
+                    bool isCargoTransport =
+                        Mod.m_Setting.EnableAssetPacks && cargoTransport[i] == 1;
+                    bool isTransportLane = Mod.m_Setting.EnableAssetPacks && transportLane[i] == 1;
+                    bool isBicycleStop = Mod.m_Setting.EnableAssetPacks && bicycleStop[i] == 1;
+
+                    var entity = entities[i];
+                    if (!prefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase))
+                        continue;
+
+                    if (isBaseGameContent && prefabBase.builtin)
                     {
-                        prefabSystem.TryGetPrefab(
-                            new PrefabID("ContentPrefab", $"StarQ_CP {packName}"),
-                            out contentPrefab
-                        );
-                    }
-
-                    Entity apEntity = assetPacks[packName];
-                    if (apEntity == null)
-                    {
-                        LogHelper.SendLog($"AssetPack {packName} not found");
-                        return;
-                    }
-                    var entities = entityQuery.ToEntityArray(Allocator.Temp);
-                    var results = new NativeArray<byte>(entities.Length, Allocator.TempJob);
-
-                    if (packName == "BaseGame")
-                        for (int i = 0; i < entities.Length; i++)
-                            results[i] = 1;
-                    else
-                    {
-                        var job = new FilterJob
+                        if (contentPrefab != null)
                         {
-                            entities = entities,
-                            uiDataLookup = SystemAPI.GetComponentLookup<UIObjectData>(true),
-                            results = results,
-                        };
-
-                        job.Schedule(entities.Length, 32).Complete();
-                    }
-
-                    LogHelper.SendLog($"Checking {entities.Length} for {packName}", LogLevel.DEV);
-                    for (int i = 0; i < entities.Length; i++)
-                    {
-                        if (results[i] == 0)
-                            continue;
-
-                        var entity = entities[i];
-
-                        //if (
-                        //    packName != "BaseGame"
-                        //    && EntityManager.TryGetComponent(entity, out UIObjectData uiObj)
-                        //    && uiObj.m_Group == null
-                        //)
-                        //    continue;
-
-                        if (!prefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase))
-                            continue;
-
-                        if (packName == "BaseGame")
-                        {
-                            if (!prefabBase.builtin)
-                                continue;
-
-                            if (contentPrefab != null)
-                            {
-                                ContentPrerequisite cpd =
-                                    ScriptableObject.CreateInstance<ContentPrerequisite>();
-                                cpd.m_ContentPrerequisite = contentPrefab as ContentPrefab;
-                                prefabBase.AddComponentFrom(cpd);
-                            }
-
-                            if (
-                                !(
-                                    prefabBase is ZonePrefab
-                                    || prefabBase is ObjectPrefab
-                                    || prefabBase is NetPrefab
-                                    || prefabBase is AreaPrefab
-                                    || prefabBase is RoutePrefab
-                                    || prefabBase is NetLanePrefab
-                                )
-                            )
-                                continue;
-
-                            //if (
-                            //    !(
-                            //        pb.asset == null
-                            //        || (
-                            //            pb.asset != null
-                            //            && pb.asset.path.Contains("/Cities2_Data/Content/")
-                            //        )
-                            //    )
-                            //)
-                            //{
-                            //    continue;
-                            //}
-                            //addeds.Add(pb.ToJSONString());
-                        }
-
-                        AssetPackElement app = new() { m_Pack = apEntity };
-
-                        if (
-                            !EntityManager.TryGetBuffer(
-                                entity,
-                                false,
-                                out DynamicBuffer<AssetPackElement> apEBuffer
-                            )
-                        )
-                            apEBuffer = EntityManager.AddBuffer<AssetPackElement>(entity);
-
-                        bool contains = false;
-                        foreach (var item in apEBuffer)
-                        {
-                            if (item.m_Pack == apEntity)
-                            {
-                                contains = true;
-                                break;
-                            }
-                        }
-                        if (!contains)
-                            apEBuffer.Add(app);
-
-                        //string entityName = prefabSystem.GetPrefabName(entity);
-                        //LogHelper.SendLog($"Adding {entityName} to {packName}");
-
-                        //if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
-                        //{
-                        //    try
-                        //    {
-                        //        LogHelper.SendLog($"Has {apd}");
-                        //    }
-                        //    catch (Exception ex)
-                        //    {
-                        //        LogHelper.SendLog(entity.GetType().Name);
-                        //        LogHelper.SendLog(ex);
-                        //    }
-                        //}
-
-                        //EntityManager.TryGetComponent(apEntity, out PrefabData apData);
-                        prefabSystem.TryGetPrefab(apEntity, out AssetPackPrefab apPrefab);
-
-                        AssetPackItem api = prefabBase.AddOrGetComponent<AssetPackItem>();
-
-                        //LogHelper.SendLog(prefabSystem.GetPrefabName(entity));
-                        //LogHelper.SendLog(apPrefab != null);
-                        //LogHelper.SendLog(api != null);
-                        //LogHelper.SendLog($"{api?.m_Packs?.Length}");
-                        //LogHelper.SendLog(!api.m_Packs.Length);
-                        //LogHelper.SendLog(api != null);
-                        //LogHelper.SendLog(api != null);
-                        //LogHelper.SendLog(api != null);
-                        //LogHelper.SendLog(api != null);
-                        //LogHelper.SendLog(api != null);
-
-                        if (apPrefab != null && api != null)
-                        {
-                            bool create = false;
-                            if (api.m_Packs == null)
-                            {
-                                create = true;
-                            }
-
-                            if (create)
-                            {
-                                api.m_Packs = new AssetPackPrefab[] { apPrefab };
-                            }
-                            else
-                            {
-                                Array.Resize(ref api.m_Packs, api.m_Packs?.Length + 1 ?? 0);
-                                api.m_Packs[^1] = apPrefab;
-                            }
-                            addeds.Add(prefabSystem.GetPrefabName(entity));
+                            ContentPrerequisite cpd =
+                                ScriptableObject.CreateInstance<ContentPrerequisite>();
+                            cpd.m_ContentPrerequisite = contentPrefab as ContentPrefab;
+                            prefabBase.AddComponentFrom(cpd);
                         }
                     }
-                    results.Dispose();
-                }
-                catch (Exception e)
-                {
-                    LogHelper.SendLog(e, LogLevel.Error);
-                }
-                if (addeds.Count > 0)
-                    LogHelper.SendLog($"\n{string.Join("\n", addeds)}", LogLevel.DEV);
-            }
-            else
-            {
-                PrefabBase? contentPrefab = null;
-                if (packName == "BaseGame")
-                    prefabSystem.TryGetPrefab(
-                        new PrefabID("ContentPrefab", "StarQ_CP BaseGame"),
-                        out contentPrefab
-                    );
-                try
-                {
-                    Entity apEntity = assetPacks[packName];
-                    var entities = entityQuery.ToEntityArray(Allocator.Temp);
-                    foreach (Entity entity in entities)
+
+                    if (
+                        !isBaseGamePack
+                        && !isTransportDepot
+                        && !isPublicTransport
+                        && !isCargoTransport
+                        && !isTransportLane
+                        && !isBicycleStop
+                    )
+                        continue;
+
+                    if (!_changes.TryGetValue(prefabBase, out var record))
                     {
-                        if (
-                            !prefabSystem.TryGetPrefab(
-                                new PrefabID("AssetPackPrefab", packName),
-                                out PrefabBase packPrefab
-                            )
-                        )
-                            continue;
-
-                        if (
-                            !EntityManager.TryGetBuffer(
-                                entity,
-                                false,
-                                out DynamicBuffer<AssetPackElement> apBuffer
-                            )
-                        )
-                            continue;
-
-                        string entityName = prefabSystem.GetPrefabName(entity);
-                        for (int i = 0; i < apBuffer.Length; i++)
-                        {
-                            var packTemp = apBuffer[i].m_Pack;
-                            var packInAsset = prefabSystem.GetPrefabName(packTemp);
-                            if (packInAsset == packName)
-                            {
-                                apBuffer.RemoveAt(i);
-                                //LogHelper.SendLog($"Removing {entityName} from {packName}");
-                                break;
-                            }
-                        }
-
-                        EntityManager.TryGetComponent(apEntity, out PrefabData apData);
-                        prefabSystem.TryGetPrefab(apData, out AssetPackPrefab apPrefab);
-
-                        EntityManager.TryGetComponent(entity, out PrefabData prefabData);
-                        if (prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase))
-                        {
-                            AssetPackItem api = prefabBase.GetComponent<AssetPackItem>();
-                            if (api != null && api.m_Packs != null)
-                            {
-                                List<AssetPackPrefab> updatedPacks = api
-                                    .m_Packs.Where(p => p != apPrefab)
-                                    .ToList();
-
-                                if (updatedPacks.Count > 0)
-                                    api.m_Packs = updatedPacks.ToArray();
-                                else
-                                    prefabBase.Remove<AssetPackItem>();
-                            }
-                        }
-
-                        if (
-                            contentPrefab != null
-                            && prefabBase.TryGet(out ContentPrerequisite cPrereq)
-                            && cPrereq.m_ContentPrerequisite == contentPrefab
-                        )
-                            prefabBase.Remove<ContentPrerequisite>();
+                        record = new PrefabPackChanges();
+                        _changes[prefabBase] = record;
+                        record.PrefabBaseEntity = entity;
                     }
-                }
-                catch (Exception e)
-                {
-                    LogHelper.SendLog(e, LogLevel.Error);
-                }
-            }
-        }
 
-        public void AddAssetPacksToNetwork(bool yes, string packName, EntityQuery entityQuery)
-        {
-            if (yes)
-            {
-                try
-                {
-                    Entity apEntity = assetPacks[packName];
-                    if (apEntity == null)
+                    if (isBaseGameContent && prefabBase.builtin)
+                        record.ContentPrerequisiteAdded = true;
+
+                    List<string> packsToAdd = new();
+
+                    if (isBaseGamePack && prefabBase.builtin)
+                        packsToAdd.Add(PacksToAdd.BaseGame);
+
+                    if (isTransportDepot)
+                        packsToAdd.Add(PacksToAdd.TransportDepot);
+
+                    if (isPublicTransport)
                     {
-                        LogHelper.SendLog($"AssetPack {packName} not found");
-                        return;
-                    }
-                    var entities = entityQuery.ToEntityArray(Allocator.Temp);
-                    var results = new NativeArray<byte>(entities.Length, Allocator.TempJob);
-
-                    var job = new FilterJob
-                    {
-                        entities = entities,
-                        uiDataLookup = SystemAPI.GetComponentLookup<UIObjectData>(true),
-                        results = results,
-                    };
-
-                    job.Schedule(entities.Length, 32).Complete();
-
-                    LogHelper.SendLog($"Checking {entities.Length} for {packName}", LogLevel.DEV);
-                    List<string> addeds = new();
-                    for (int i = 0; i < entities.Length; i++)
-                    {
-                        if (results[i] == 0)
-                            continue;
-
-                        Entity entity = entities[i];
-
-                        if (
-                            EntityManager.TryGetComponent(entity, out UIObjectData uiObj)
-                            && uiObj.m_Group == null
-                        )
-                            continue;
-
                         if (
                             !EntityManager.TryGetBuffer(
                                 entity,
@@ -467,119 +264,200 @@ namespace AssetUIManager.Systems
                                 out DynamicBuffer<NetGeometrySection> ngsBuffer
                             )
                         )
-                            continue;
-
-                        bool isValid = false;
-
-                        foreach (NetGeometrySection ngs in ngsBuffer)
                         {
-                            string ngsName = prefabSystem.GetPrefabName(ngs.m_Section);
-                            if (
-                                !ngsName.StartsWith("Public Transport")
-                                && !ngsName.Contains("Track")
-                            )
-                            {
-                                continue;
-                            }
-                            isValid = true;
-                            break;
+                            packsToAdd.Add(PacksToAdd.PublicTransport);
                         }
-
-                        if (!isValid)
-                            continue;
-
-                        AssetPackElement app = new() { m_Pack = apEntity };
-
-                        if (
-                            !EntityManager.TryGetBuffer(
-                                entity,
-                                false,
-                                out DynamicBuffer<AssetPackElement> apBuffer
-                            )
-                        )
-                            apBuffer = EntityManager.AddBuffer<AssetPackElement>(entity);
-
-                        string entityName = prefabSystem.GetPrefabName(entity);
-                        apBuffer.Add(app);
-
-                        //LogHelper.SendLog($"Adding {entityName} to {packName}");
-
-                        //if (EntityManager.TryGetComponent(entity, out AssetPackData apd))
-                        //{
-                        //    try
-                        //    {
-                        //        LogHelper.SendLog($"Has {apd}");
-                        //    }
-                        //    catch (Exception ex)
-                        //    {
-                        //        LogHelper.SendLog(entity.GetType().Name);
-                        //        LogHelper.SendLog(ex);
-                        //    }
-                        //}
-
-                        EntityManager.TryGetComponent(apEntity, out PrefabData apData);
-                        prefabSystem.TryGetPrefab(apData, out AssetPackPrefab apPrefab);
-
-                        EntityManager.TryGetComponent(entity, out PrefabData prefabData);
-                        prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase);
-
-                        if (apPrefab != null)
+                        else
                         {
-                            AssetPackItem ap = ScriptableObject.CreateInstance<AssetPackItem>();
-                            ap.m_Packs = new AssetPackPrefab[] { apPrefab };
-                            prefabBase.AddComponentFrom(ap);
+                            bool isValid = false;
+
+                            foreach (NetGeometrySection ngs in ngsBuffer)
+                            {
+                                string ngsName = prefabSystem.GetPrefabName(ngs.m_Section);
+                                if (
+                                    !ngsName.StartsWith("Public Transport")
+                                    && !ngsName.Contains("Track")
+                                )
+                                    continue;
+
+                                isValid = true;
+                                break;
+                            }
+
+                            if (isValid)
+                                packsToAdd.Add(PacksToAdd.PublicTransport);
                         }
                     }
-                    results.Dispose();
-                }
-                catch (Exception e)
-                {
-                    LogHelper.SendLog(e, LogLevel.Error);
-                }
-            }
-            else
-            {
-                try
-                {
-                    var entities = entityQuery.ToEntityArray(Allocator.Temp);
-                    foreach (Entity entity in entities)
+
+                    if (isCargoTransport)
+                        packsToAdd.Add(PacksToAdd.CargoTransport);
+
+                    if (isTransportLane)
+                        packsToAdd.Add(PacksToAdd.TransportLane);
+
+                    if (isBicycleStop)
                     {
                         if (
-                            !prefabSystem.TryGetPrefab(
-                                new PrefabID("AssetPackPrefab", packName),
-                                out PrefabBase packPrefab
+                            !prefabBase.Has<ParkingFacility>()
+                            || (
+                                prefabBase.TryGet<ParkingFacility>(out var parkingFacility)
+                                && parkingFacility.m_RoadTypes.HasFlag(Game.Net.RoadTypes.Bicycle)
                             )
                         )
-                            continue;
+                            packsToAdd.Add(PacksToAdd.BicycleStop);
+                    }
 
-                        if (
-                            !EntityManager.TryGetBuffer(
-                                entity,
-                                false,
-                                out DynamicBuffer<AssetPackElement> apBuffer
-                            )
+                    if (
+                        !EntityManager.TryGetBuffer(
+                            entity,
+                            false,
+                            out DynamicBuffer<AssetPackElement> apEBuffer
                         )
-                            continue;
+                    )
+                        apEBuffer = EntityManager.AddBuffer<AssetPackElement>(entity);
 
-                        string entityName = prefabSystem.GetPrefabName(entity);
-                        for (int i = 0; i < apBuffer.Length; i++)
+                    var existing = new NativeArray<Entity>(apEBuffer.Length, Allocator.Temp);
+                    for (int j = 0; j < apEBuffer.Length; j++)
+                        existing[j] = apEBuffer[j].m_Pack;
+
+                    AssetPackItem api = prefabBase.AddOrGetComponent<AssetPackItem>();
+                    List<AssetPackPrefab>? packList = null;
+
+                    if (api.m_Packs != null)
+                        packList = new List<AssetPackPrefab>(api.m_Packs.Length + packsToAdd.Count);
+                    else
+                        packList = new List<AssetPackPrefab>(packsToAdd.Count);
+
+                    if (api.m_Packs != null)
+                    {
+                        for (int j = 0; j < api.m_Packs.Length; j++)
+                            packList.Add(api.m_Packs[j]);
+                    }
+
+                    foreach (var packName in packsToAdd)
+                    {
+                        Entity apEntity = assetPacks[packName];
+                        if (apEntity == Entity.Null)
                         {
-                            var packTemp = apBuffer[i].m_Pack;
-                            var packInAsset = prefabSystem.GetPrefabName(packTemp);
-                            if (packInAsset == packName)
+                            LogHelper.SendLog($"AssetPack {packName} not found");
+                            continue;
+                        }
+
+                        bool exists = false;
+                        for (int j = 0; j < existing.Length; j++)
+                        {
+                            if (existing[j] == apEntity)
                             {
-                                apBuffer.RemoveAt(i);
-                                //LogHelper.SendLog($"Removing {entityName} from {packName}");
+                                exists = true;
                                 break;
                             }
                         }
+
+                        if (!exists)
+                            apEBuffer.Add(new() { m_Pack = apEntity });
+
+                        prefabSystem.TryGetPrefab(apEntity, out AssetPackPrefab apPrefab);
+
+                        if (!packList.Contains(apPrefab))
+                            packList.Add(apPrefab);
+                        api.m_Packs = packList.ToArray();
                     }
-                }
-                catch (Exception e)
-                {
-                    LogHelper.SendLog(e, LogLevel.Error);
+                    record.AddedPackPrefabs = packsToAdd;
                 }
             }
+            catch (Exception ex)
+            {
+                LogHelper.SendLog(ex, LogLevel.Error);
+            }
+            finally
+            {
+                baseGameContent.Dispose();
+                baseGamePack.Dispose();
+                transportDepot.Dispose();
+                publicTransport.Dispose();
+                cargoTransport.Dispose();
+                transportLane.Dispose();
+                bicycleStop.Dispose();
+                publicTransportSections.Dispose();
+            }
+            stopWatch.Stop();
+            LogHelper.SendLog(
+                $"Refreshed AssetPacks in {stopWatch.Elapsed.TotalSeconds:0.000}s!",
+                LogLevel.DEVD
+            );
+            //findItSystem.RefreshFindIt();
+            NeedUpdate = false;
+            isSet = true;
+        }
+
+        public void DisableUI()
+        {
+            if (!isSet)
+                return;
+
+            var stopWatch = new Stopwatch();
+            try
+            {
+                foreach (var kvp in _changes)
+                {
+                    PrefabBase prefab = kvp.Key;
+                    PrefabPackChanges record = kvp.Value;
+                    Entity entity = record.PrefabBaseEntity;
+
+                    if (record.AddedPackPrefabs.Count > 0)
+                    {
+                        foreach (var packName in record.AddedPackPrefabs)
+                        {
+                            var apEntity = assetPacks[packName];
+                            if (
+                                entity != Entity.Null
+                                && EntityManager.TryGetBuffer(
+                                    entity,
+                                    false,
+                                    out DynamicBuffer<AssetPackElement> buffer
+                                )
+                            )
+                            {
+                                for (int i = 0; i < buffer.Length; i++)
+                                {
+                                    if (buffer[i].m_Pack == apEntity)
+                                    {
+                                        buffer.RemoveAt(i);
+                                        break;
+                                    }
+                                }
+
+                                if (buffer.Length == 0)
+                                    EntityManager.RemoveComponent<AssetPackElement>(entity);
+                            }
+
+                            var api = prefab.GetComponent<AssetPackItem>();
+                            if (api == null || api.m_Packs == null)
+                                break;
+
+                            api.m_Packs = api
+                                .m_Packs.Where(p => p.name != $"StarQ_AP {packName}")
+                                .ToArray();
+                        }
+                    }
+
+                    if (record.ContentPrerequisiteAdded)
+                        prefab.Remove<ContentPrerequisite>();
+                }
+
+                _changes.Clear();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.SendLog(ex, LogLevel.Error);
+            }
+            stopWatch.Stop();
+            LogHelper.SendLog(
+                $"Disabled AssetPacks in {stopWatch.Elapsed.TotalSeconds:0.000}s!",
+                LogLevel.DEVD
+            );
+            NeedUpdate = false;
+            isSet = false;
         }
 
         public void CreateAssetPacks(string name, string icon, int priorityFixed = -9999999)
@@ -603,6 +481,11 @@ namespace AssetUIManager.Systems
                 MenuUI.active = true;
                 MenuUI.m_IsDebugObject = false;
                 MenuUI.m_Group = null;
+
+                var EACO = assetPackPrefab.AddComponent<EditorAssetCategoryOverride>();
+                List<string> eaco_inc = new() { $"StarQ/_Utils/{Mod.Name}" };
+                EACO.m_IncludeCategories = eaco_inc.ToArray();
+
                 prefabSystem.AddPrefab(assetPackPrefab);
                 assetPack = assetPackPrefab;
             }
@@ -610,22 +493,37 @@ namespace AssetUIManager.Systems
             assetPacks.TryAdd(name, assetPackEntity);
         }
 
-        public void CreateContentPrefab(string name)
+        public void CreateContentPrefab()
         {
             if (
                 !prefabSystem.TryGetPrefab(
-                    new PrefabID("ContentPrefab", $"StarQ_CP {name}"),
+                    new PrefabID("ContentPrefab", $"{Mod.Name}"),
                     out PrefabBase _
                 )
             )
             {
                 ContentPrefab contentPrefabNew = ScriptableObject.CreateInstance<ContentPrefab>();
-                contentPrefabNew.name = $"StarQ_CP {name}";
+                contentPrefabNew.name = Mod.Name;
                 var dlc = contentPrefabNew.AddComponent<DlcRequirement>();
 
                 dlc.m_Notes = "Base Game content";
                 dlc.m_BaseGameRequiresDatabase = false;
-                dlc.m_Dlc = new Colossal.PSI.Common.DlcId(-2009);
+                dlc.m_Dlc = new DlcId(-2009);
+
+                PrefabIdentifierInfo pii = new()
+                {
+                    m_Name = "StarQ_CP BaseGame",
+                    m_Type = "ContentPrefab",
+                };
+                List<PrefabIdentifierInfo> list = new() { pii };
+
+                var obsolete = contentPrefabNew.AddComponent<ObsoleteIdentifiers>();
+                obsolete.m_PrefabIdentifiers = list.ToArray();
+
+                var EACO = contentPrefabNew.AddComponent<EditorAssetCategoryOverride>();
+                List<string> eaco_inc = new() { $"StarQ/_Utils/{Mod.Name}" };
+                EACO.m_IncludeCategories = eaco_inc.ToArray();
+
                 prefabSystem.AddPrefab(contentPrefabNew);
             }
         }
@@ -639,23 +537,170 @@ namespace AssetUIManager.Systems
             [ReadOnly]
             public ComponentLookup<UIObjectData> uiDataLookup;
 
-            public NativeArray<byte> results;
+            [ReadOnly]
+            public ComponentLookup<PrefabData> prefabDataLookup;
+
+            [ReadOnly]
+            public ComponentLookup<ZoneData> zoneLookup;
+
+            [ReadOnly]
+            public ComponentLookup<ObjectData> objectLookup;
+
+            [ReadOnly]
+            public ComponentLookup<NetData> netLookup;
+
+            [ReadOnly]
+            public ComponentLookup<AreaData> areaLookup;
+
+            [ReadOnly]
+            public ComponentLookup<RouteData> routeLookup;
+
+            [ReadOnly]
+            public ComponentLookup<NetLaneData> netLaneLookup;
+
+            [ReadOnly]
+            public ComponentLookup<ContentPrerequisiteData> contentPrerequisiteLookup;
+
+            [ReadOnly]
+            public ComponentLookup<BuildingData> buildingLookup;
+
+            [ReadOnly]
+            public ComponentLookup<TransportDepotData> transportDepotLookup;
+
+            [ReadOnly]
+            public ComponentLookup<ServiceUpgradeData> serviceUpgradeLookup;
+
+            [ReadOnly]
+            public ComponentLookup<PublicTransportStationData> publicTransportStationLookup;
+
+            [ReadOnly]
+            public ComponentLookup<TransportStopData> transportStopLookup;
+
+            [ReadOnly]
+            public ComponentLookup<RoadData> roadLookup;
+
+            [ReadOnly]
+            public ComponentLookup<TrackData> trackLookup;
+
+            [ReadOnly]
+            public ComponentLookup<TransportLineData> transportLineLookup;
+
+            [ReadOnly]
+            public ComponentLookup<CargoTransportStationData> cargoTransportStationLookup;
+
+            [ReadOnly]
+            public ComponentLookup<ParkingSpaceData> parkingSpaceLookup;
+
+            [ReadOnly]
+            public ComponentLookup<ParkingFacilityData> parkingFacilityLookup;
+
+            [ReadOnly]
+            public BufferLookup<NetGeometrySection> netGeometrySectionLookup;
+
+            [ReadOnly]
+            public NativeParallelHashMap<Entity, byte> sectionMap;
+
+            public NativeArray<byte> transportDepot;
+            public NativeArray<byte> publicTransport;
+            public NativeArray<byte> cargoTransport;
+            public NativeArray<byte> transportLane;
+            public NativeArray<byte> bicycleStop;
+            public NativeArray<byte> baseGamePack;
+            public NativeArray<byte> baseGameContent;
 
             public void Execute(int index)
             {
+                transportDepot[index] = 0;
+                publicTransport[index] = 0;
+                cargoTransport[index] = 0;
+                transportLane[index] = 0;
+                bicycleStop[index] = 0;
+                baseGamePack[index] = 0;
+                baseGameContent[index] = 0;
                 Entity e = entities[index];
 
-                if (uiDataLookup.HasComponent(e))
+                if (prefabDataLookup.HasComponent(e) && !contentPrerequisiteLookup.HasComponent(e))
+                    baseGameContent[index] = 1;
+
+                if (
+                    !(
+                        uiDataLookup.HasComponent(e)
+                        || zoneLookup.HasComponent(e)
+                        || objectLookup.HasComponent(e)
+                        || netLookup.HasComponent(e)
+                        || areaLookup.HasComponent(e)
+                        || routeLookup.HasComponent(e)
+                        || netLaneLookup.HasComponent(e)
+                    )
+                )
+                    return;
+
+                if (prefabDataLookup.HasComponent(e) && !contentPrerequisiteLookup.HasComponent(e))
+                    baseGamePack[index] = 1;
+
+                if (!serviceUpgradeLookup.HasComponent(e))
                 {
-                    var uiObj = uiDataLookup[e];
-                    if (uiObj.m_Group == Entity.Null)
+                    if (transportDepotLookup.HasComponent(e) && buildingLookup.HasComponent(e))
+                        transportDepot[index] = 1;
+
+                    if (
+                        (
+                            publicTransportStationLookup.HasComponent(e)
+                            && buildingLookup.HasComponent(e)
+                        ) || transportStopLookup.HasComponent(e)
+                    )
+                        publicTransport[index] = 1;
+
+                    if (
+                        (
+                            cargoTransportStationLookup.HasComponent(e)
+                            && buildingLookup.HasComponent(e)
+                        )
+                    )
+                        cargoTransport[index] = 1;
+
+                    if (
+                        transportLineLookup.HasComponent(e)
+                        || roadLookup.HasComponent(e)
+                        || trackLookup.HasComponent(e)
+                    )
                     {
-                        results[index] = 0;
-                        return;
+                        if (netGeometrySectionLookup.HasBuffer(e))
+                        {
+                            bool isValid = false;
+
+                            var buffer = netGeometrySectionLookup[e];
+
+                            for (int i = 0; i < buffer.Length; i++)
+                            {
+                                var ngs = buffer[i];
+                                if (
+                                    !sectionMap.TryGetValue(ngs.m_Section, out byte isPT)
+                                    && isPT == 1
+                                )
+                                    continue;
+
+                                isValid = true;
+                                break;
+                            }
+
+                            if (isValid)
+                                transportLane[index] = 1;
+                        }
+                    }
+
+                    if (
+                        parkingSpaceLookup.HasComponent(e)
+                        || (
+                            parkingFacilityLookup.HasComponent(e)
+                            && parkingFacilityLookup[e].m_RoadTypes == Game.Net.RoadTypes.Bicycle
+                        )
+                    )
+                    {
+                        bicycleStop[index] = 1;
+                        publicTransport[index] = 0;
                     }
                 }
-
-                results[index] = 1;
             }
         }
     }

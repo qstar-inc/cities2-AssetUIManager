@@ -27,9 +27,6 @@ namespace AssetUIManager.Systems
                 .WithAll<UIAssetCategoryData>()
                 .Build();
             CollectData();
-            LogHelper.SendLog("OnCreate CollectData completed", LogLevel.DEV);
-            LogHelper.SendLog(assetMenuDataDict.Count.ToString(), LogLevel.DEV);
-            LogHelper.SendLog(assetCatDataDict.Count.ToString(), LogLevel.DEV);
         }
 
         protected override void OnUpdate() { }
@@ -45,11 +42,11 @@ namespace AssetUIManager.Systems
 
         public static void CollectData()
         {
-            PrefabSystem prefabSystem = WorldHelper.prefabSystem;
+            PrefabSystem prefabSystem = WorldHelper.PrefabSystem;
             if (DataCollected)
                 return;
 
-            LogHelper.SendLog("Collecting Data", LogLevel.DEV);
+            LogHelper.SendLog("Collecting Data", LogLevel.DEVD);
 
             try
             {
@@ -72,7 +69,7 @@ namespace AssetUIManager.Systems
                 LogHelper.SendLog(e, LogLevel.Error);
             }
             DataCollected = true;
-            LogHelper.SendLog("Collecting Data completed", LogLevel.DEV);
+            LogHelper.SendLog("Data Collection completed", LogLevel.DEVD);
         }
     }
 }

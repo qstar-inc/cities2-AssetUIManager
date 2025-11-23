@@ -44,6 +44,9 @@ namespace AssetUIManager
         public bool PedestrianInPathway { get; set; } = true;
 
         [SettingsUISection(GeneralTab, RoadsGroup)]
+        public bool BikewayInRoads { get; set; } = true;
+
+        [SettingsUISection(GeneralTab, RoadsGroup)]
         public bool QuaysInRoads { get; set; } = true;
 
         [SettingsUISection(GeneralTab, RoadsGroup)]
@@ -94,6 +97,7 @@ namespace AssetUIManager
             BridgesInRoads = true;
             PathwayInRoads = true;
             QuaysInRoads = true;
+            BikewayInRoads = true;
             ParkingRoadsInRoads = true;
             SeparatedHospitals = true;
             SeparateControlAndResearch = true;

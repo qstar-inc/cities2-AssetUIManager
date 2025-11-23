@@ -116,11 +116,12 @@ namespace AssetUIManager.Systems
 
             //log = Mod.m_Setting.VerboseLogging;
 
-            LogHelper.SendLog("Refreshing UI elements", LogLevel.DEV);
+            LogHelper.SendLog("Refreshing UI elements", LogLevel.DEVD);
             try
             {
                 TogglePathway(Mod.m_Setting.PathwayInRoads, 66);
-                TogglePathway(Mod.m_Setting.QuaysInRoads, 67, 2);
+                TogglePathway(Mod.m_Setting.QuaysInRoads, 67, PathTypes.PiersAndQuays);
+                TogglePathway(Mod.m_Setting.BikewayInRoads, 68, PathTypes.BikePaths);
                 ToggleHospital(Mod.m_Setting.SeparatedHospitals);
                 ToggleSchool(Mod.m_Setting.SeparatedSchools);
                 TogglePolice(Mod.m_Setting.SeparatedPolice);
@@ -194,7 +195,7 @@ namespace AssetUIManager.Systems
                 LogHelper.SendLog(ex, LogLevel.Error);
             }
             //if (log)
-            LogHelper.SendLog("Refresh Complete!");
+            LogHelper.SendLog("UI Elements Refresh Completed!", LogLevel.DEVD);
             NeedUpdate = false;
         }
 
@@ -269,7 +270,14 @@ namespace AssetUIManager.Systems
         //    NeedUpdate = true;
         //}
 
-        public void TogglePathway(bool yes, int priority, int type = 1)
+        public enum PathTypes
+        {
+            Pathways = 1,
+            PiersAndQuays = 2,
+            BikePaths = 3,
+        }
+
+        public void TogglePathway(bool yes, int priority, PathTypes type = PathTypes.Pathways)
         {
             try
             {
@@ -281,10 +289,13 @@ namespace AssetUIManager.Systems
                 else
                 {
                     Neighbor = "Terraforming";
-                    priority = type == 2 ? 31 : 30;
+                    priority = type == PathTypes.Pathways ? 30 : 31;
                 }
 
-                FixedString64Bytes itemName = type == 2 ? "PiersAndQuays" : "Pathways";
+                FixedString64Bytes itemName =
+                    type == PathTypes.PiersAndQuays ? "PiersAndQuays"
+                    : type == PathTypes.BikePaths ? "BikePaths"
+                    : "Pathways";
                 DataCollectionSystem.assetCatDataDict.TryGetValue(itemName, out Entity itemValue);
                 if (
                     EntityManager.TryGetComponent(itemValue, out PrefabData prefabData)
@@ -308,23 +319,26 @@ namespace AssetUIManager.Systems
                     EntityManager.SetComponentData(itemValue, newCat);
                     EntityManager.SetComponentData(itemValue, uiObj);
 
-                    bool pedInPath = Mod.m_Setting.PedestrianInPathway;
-                    if (!yes)
-                        pedInPath = false;
+                    if (type != PathTypes.BikePaths)
+                    {
+                        bool pedInPath = Mod.m_Setting.PedestrianInPathway;
+                        if (!yes)
+                            pedInPath = false;
 
-                    if (type != 2)
-                        ProcessMovingAssets(
-                            pedInPath,
-                            itemName,
-                            "",
-                            "",
-                            0,
-                            "Pedestrian Section",
-                            roadQuery,
-                            pedStreetAssetMenuData,
-                            "lane",
-                            Array.Empty<string>()
-                        );
+                        if (type != PathTypes.PiersAndQuays)
+                            ProcessMovingAssets(
+                                pedInPath,
+                                itemName,
+                                "",
+                                "",
+                                0,
+                                "Pedestrian Section",
+                                roadQuery,
+                                pedStreetAssetMenuData,
+                                "lane",
+                                Array.Empty<string>()
+                            );
+                    }
                 }
             }
             catch (Exception e)
