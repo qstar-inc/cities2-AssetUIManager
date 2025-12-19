@@ -76,8 +76,8 @@ namespace AssetUIManager.Systems
         {
             if (gameMode.IsGame())
                 RefreshUI();
-            else
-                DisableUI();
+            //else
+            //DisableUI();
         }
 
         public static class PacksToAdd
@@ -93,7 +93,7 @@ namespace AssetUIManager.Systems
         public void CreateAssetPacksInBulk()
         {
             CreateContentPrefab();
-            CreateAssetPacks(PacksToAdd.BaseGame, UIHostHelper.DLC("Game"), -20);
+            CreateAssetPacks(PacksToAdd.BaseGame, UIHostHelper.Icon("CS2"), -20);
             CreateAssetPacks(PacksToAdd.TransportDepot, UIHostHelper.Icon("Depots"), 7700001);
             CreateAssetPacks(
                 PacksToAdd.PublicTransport,
@@ -216,7 +216,7 @@ namespace AssetUIManager.Systems
                     if (!prefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase))
                         continue;
 
-                    if (isBaseGameContent && prefabBase.builtin)
+                    if (isBaseGameContent && prefabBase.isBuiltin)
                     {
                         if (contentPrefab != null)
                         {
@@ -244,12 +244,12 @@ namespace AssetUIManager.Systems
                         record.PrefabBaseEntity = entity;
                     }
 
-                    if (isBaseGameContent && prefabBase.builtin)
+                    if (isBaseGameContent && prefabBase.isBuiltin)
                         record.ContentPrerequisiteAdded = true;
 
                     List<string> packsToAdd = new();
 
-                    if (isBaseGamePack && prefabBase.builtin)
+                    if (isBaseGamePack && prefabBase.isBuiltin)
                         packsToAdd.Add(PacksToAdd.BaseGame);
 
                     if (isTransportDepot)
@@ -320,19 +320,19 @@ namespace AssetUIManager.Systems
                     for (int j = 0; j < apEBuffer.Length; j++)
                         existing[j] = apEBuffer[j].m_Pack;
 
-                    AssetPackItem api = prefabBase.AddOrGetComponent<AssetPackItem>();
-                    List<AssetPackPrefab>? packList = null;
+                    //AssetPackItem api = prefabBase.AddOrGetComponent<AssetPackItem>();
+                    //List<AssetPackPrefab>? packList = null;
 
-                    if (api.m_Packs != null)
-                        packList = new List<AssetPackPrefab>(api.m_Packs.Length + packsToAdd.Count);
-                    else
-                        packList = new List<AssetPackPrefab>(packsToAdd.Count);
+                    //if (api.m_Packs != null)
+                    //    packList = new List<AssetPackPrefab>(api.m_Packs.Length + packsToAdd.Count);
+                    //else
+                    //    packList = new List<AssetPackPrefab>(packsToAdd.Count);
 
-                    if (api.m_Packs != null)
-                    {
-                        for (int j = 0; j < api.m_Packs.Length; j++)
-                            packList.Add(api.m_Packs[j]);
-                    }
+                    //if (api.m_Packs != null)
+                    //{
+                    //    for (int j = 0; j < api.m_Packs.Length; j++)
+                    //        packList.Add(api.m_Packs[j]);
+                    //}
 
                     foreach (var packName in packsToAdd)
                     {
@@ -356,11 +356,11 @@ namespace AssetUIManager.Systems
                         if (!exists)
                             apEBuffer.Add(new() { m_Pack = apEntity });
 
-                        prefabSystem.TryGetPrefab(apEntity, out AssetPackPrefab apPrefab);
+                        //prefabSystem.TryGetPrefab(apEntity, out AssetPackPrefab apPrefab);
 
-                        if (!packList.Contains(apPrefab))
-                            packList.Add(apPrefab);
-                        api.m_Packs = packList.ToArray();
+                        //if (!packList.Contains(apPrefab))
+                        //    packList.Add(apPrefab);
+                        //api.m_Packs = packList.ToArray();
                     }
                     record.AddedPackPrefabs = packsToAdd;
                 }
@@ -431,13 +431,13 @@ namespace AssetUIManager.Systems
                                     EntityManager.RemoveComponent<AssetPackElement>(entity);
                             }
 
-                            var api = prefab.GetComponent<AssetPackItem>();
-                            if (api == null || api.m_Packs == null)
-                                break;
+                            //var api = prefab.GetComponent<AssetPackItem>();
+                            //if (api == null || api.m_Packs == null)
+                            //    break;
 
-                            api.m_Packs = api
-                                .m_Packs.Where(p => p.name != $"StarQ_AP {packName}")
-                                .ToArray();
+                            //api.m_Packs = api
+                            //    .m_Packs.Where(p => p.name != $"StarQ_AP {packName}")
+                            //    .ToArray();
                         }
                     }
 

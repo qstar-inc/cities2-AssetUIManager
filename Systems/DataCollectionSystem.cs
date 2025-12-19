@@ -26,6 +26,10 @@ namespace AssetUIManager.Systems
                 .QueryBuilder()
                 .WithAll<UIAssetCategoryData>()
                 .Build();
+
+            ModHelper.AddAfterActivePlaysetOrModStatusChanged(
+                AddAfterActivePlaysetOrModStatusChanged
+            );
             CollectData();
         }
 
@@ -39,6 +43,14 @@ namespace AssetUIManager.Systems
         //    if (assetCatDataDict.IsCreated)
         //        assetCatDataDict.Dispose();
         //}
+
+        public static void AddAfterActivePlaysetOrModStatusChanged()
+        {
+            assetMenuDataDict.Clear();
+            assetCatDataDict.Clear();
+            DataCollected = false;
+            CollectData();
+        }
 
         public static void CollectData()
         {

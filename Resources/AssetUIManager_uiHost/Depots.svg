@@ -1,115 +1,83 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
-  <defs>
-    <style>
-      .cls-1 {
-        fill: #0d333d;
-      }
-
-      .cls-2 {
-        fill: #a1886c;
-      }
-
-      .cls-3 {
-        fill: #ce6b6b;
-      }
-
-      .cls-4 {
-        fill: #d8d5d5;
-      }
-
-      .cls-5 {
-        fill: #4e4e4e;
-      }
-
-      .cls-6 {
-        fill: #fff48e;
-      }
-
-      .cls-7 {
-        fill: #987e61;
-      }
-
-      .cls-8 {
-        fill: #a4e6f1;
-      }
-
-      .cls-9 {
-        fill: #d8faff;
-      }
-
-      .cls-10 {
-        fill: #575656;
-      }
-
-      .cls-11 {
-        fill: #0b4c0e;
-      }
-
-      .cls-12 {
-        fill: #61544c;
-      }
-
-      .cls-13 {
-        fill: gray;
-      }
-
-      .cls-14 {
-        fill: #d5d2d2;
-      }
-
-      .cls-15 {
-        fill: #887056;
-      }
-    </style>
-  </defs>
-  <!-- Generator: Adobe Illustrator 28.6.0, SVG Export Plug-In . SVG Version: 1.2.0 Build 709)  -->
-  <g>
-    <g id="Layer_1">
-      <g id="Layer_1-2" data-name="Layer_1">
-        <g id="a">
-          <g>
-            <path class="cls-11" d="M4.1,14.4l9.8,5.8v-4.5l-9.8-5.8s0,4.5,0,4.5Z"/>
-            <path class="cls-1" d="M13.8,20.3l7.7-5.8v-4.3c-1.2-.5-2.6-.3-3.6.5-1.9,1.4-4.1,4.9-4.1,4.9v4.6h0Z"/>
-            <path class="cls-8" d="M4.2,10l9.6,5.7,4-4.9,3.9-.5-9.8-4.3-3.6.3-4,3.7h0Z"/>
-            <path class="cls-9" d="M8.3,6.3l9.5,4.5,3.8-.6-9.6-4.3s-3.7.4-3.7.4Z"/>
-          </g>
-          <path class="cls-14" d="M16.3,18.4v-3.3l3.5-2.4v3.1l-3.5,2.6Z"/>
-          <path class="cls-5" d="M16.6,18.2v-3l2.9-2v2.8l-2.9,2.2Z"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1.249486,0,0,1.249486,-3.054659,-1.805173)">
+        <g id="Layer_1">
+            <g id="Layer_1-2">
+                <g id="a">
+                    <g>
+                        <path d="M4.524,14.65L13.534,19.852L13.534,15.05L4.524,9.848L4.524,14.65Z" style="fill:rgb(173,173,173);fill-rule:nonzero;"/>
+                        <path d="M13.534,19.852L21.852,15.05L21.852,10.248L17.693,10.248L13.534,15.05L13.534,19.852Z" style="fill:rgb(219,219,219);fill-rule:nonzero;"/>
+                    </g>
+                    <path d="M14.921,19.052L14.921,15.844L20.465,12.649L20.465,15.851L14.921,19.052Z" style="fill:rgb(2,2,2);fill-rule:nonzero;"/>
+                    <path d="M15.25,18.862L15.25,15.936L20.169,13.087L20.169,16.022L15.25,18.862Z" style="fill:rgb(78,78,78);fill-rule:nonzero;"/>
+                </g>
+                <g transform="matrix(0.780144,-0.450416,0.808824,0.466975,1.840249,1.430527)">
+                    <rect x="-10.673" y="26.947" width="2.68" height="9.433" style="fill:rgb(206,107,107);"/>
+                </g>
+                <g transform="matrix(1,0,0,1,0,-0.309546)">
+                    <g transform="matrix(0.854176,0.493159,-0,0.924141,-1.257995,-0.693038)">
+                        <path d="M26.241,5.196L23.802,7.794L22.988,7.794L22.988,7.603L26.241,5.008L26.241,5.196Z" style="fill:rgb(97,84,76);"/>
+                    </g>
+                    <g transform="matrix(0.854176,0.493159,-0,0.924141,4.306719,2.519751)">
+                        <path d="M26.241,5.196L23.802,7.794L22.988,7.794L22.988,7.603L26.241,5.008L26.241,5.196Z" style="fill:rgb(97,84,76);"/>
+                    </g>
+                    <g transform="matrix(0.854176,0.493159,-0,0.924141,2.915954,1.710897)">
+                        <path d="M26.241,5.196L23.802,7.794L22.988,7.794L22.988,7.603L26.241,5.008L26.241,5.196Z" style="fill:rgb(97,84,76);"/>
+                    </g>
+                    <g transform="matrix(0.854176,0.493159,-0,0.924141,1.516469,0.908799)">
+                        <path d="M26.241,5.196L23.802,7.794L22.988,7.794L22.988,7.603L26.241,5.008L26.241,5.196Z" style="fill:rgb(97,84,76);"/>
+                    </g>
+                    <g transform="matrix(0.854176,0.493159,-0,0.924141,0.137406,0.112597)">
+                        <path d="M26.241,5.196L23.802,7.794L22.988,7.794L22.988,7.603L26.241,5.008L26.241,5.196Z" style="fill:rgb(97,84,76);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0.800329,0.46207,2.444733,1.26847)">
+                        <rect x="-9" y="27.703" width="3" height="0.876" style="fill:rgb(152,126,97);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0.800329,0.46207,2.444733,1.26847)">
+                        <rect x="-8.994" y="29.435" width="2.994" height="0.876" style="fill:rgb(152,126,97);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0.800329,0.46207,2.444733,1.26847)">
+                        <rect x="-8.994" y="31.177" width="2.994" height="0.866" style="fill:rgb(152,126,97);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0.800329,0.46207,2.444733,1.26847)">
+                        <rect x="-8.994" y="32.909" width="2.994" height="0.866" style="fill:rgb(152,126,97);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0.800329,0.46207,2.444733,1.26847)">
+                        <rect x="-9" y="34.644" width="3" height="0.863" style="fill:rgb(152,126,97);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0.800329,0.46207,2.227044,1.570415)">
+                        <rect x="-8" y="26.853" width="0.496" height="9.52" style="fill:rgb(216,213,213);"/>
+                    </g>
+                    <g transform="matrix(0.693105,0.400165,-0,0.96132,2.227044,1.300892)">
+                        <rect x="23.007" y="6.941" width="10.993" height="0.309" style="fill:rgb(157,157,157);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0,0.924141,2.227044,1.570415)">
+                        <rect x="34" y="36.373" width="0.496" height="0.321" style="fill:rgb(186,186,186);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0.800329,0.46207,3.589361,0.783881)">
+                        <rect x="-8" y="26.853" width="0.496" height="9.52" style="fill:rgb(216,213,213);"/>
+                    </g>
+                    <g transform="matrix(0.693105,0.400165,-0,0.96132,3.589361,0.514358)">
+                        <rect x="23.007" y="6.941" width="10.993" height="0.309" style="fill:rgb(157,157,157);"/>
+                    </g>
+                    <g transform="matrix(0.693105,-0.400165,0,0.924141,3.589361,0.783881)">
+                        <rect x="34" y="36.373" width="0.496" height="0.321" style="fill:rgb(186,186,186);"/>
+                    </g>
+                </g>
+            </g>
+            <g transform="matrix(1,0,0,1,-0.991136,0.565893)">
+                <path d="M24.224,22.484L16.6,18.082L17,17.851L24.63,22.256L24.224,22.484Z" style="fill:rgb(255,244,142);fill-rule:nonzero;"/>
+            </g>
+            <g transform="matrix(1,0,0,1,0.094066,-0.060649)">
+                <path d="M24.224,22.484L16.6,18.082L17,17.851L24.63,22.256L24.224,22.484Z" style="fill:rgb(255,244,142);fill-rule:nonzero;"/>
+            </g>
         </g>
-        <polygon class="cls-3" points="23.7 22.6 16.6 18.2 19.5 16 26.4 20.3 23.7 22.6"/>
-        <g id="a-2">
-          <g>
-            <path class="cls-12" d="M17.9,17.5l.6.4,1.7-1.4h0c0,0-2.3.8-2.3.8,0,0,0,.2,0,.2Z"/>
-            <path class="cls-12" d="M19.5,18.5l.6.4,1.6-1.4h0c0-.1-2.2.8-2.2.8,0,0,0,.2,0,.2Z"/>
-            <path class="cls-2" d="M17.9,17.3l.6.4,1.7-1.3-.7-.4h0l-1.6,1.3Z"/>
-            <path class="cls-7" d="M19.4,18.3l.6.4,1.7-1.3-.7-.4h0l-1.6,1.3Z"/>
-            <path class="cls-13" d="M18.2,17.1l3.8,2.4v-.2c.1,0,0-.3,0-.3l-3.9-2.2v.2h.1Z"/>
-            <path class="cls-4" d="M18.1,16.8l3.8,2.4.2-.2-3.8-2.4-.2.2Z"/>
-            <path class="cls-10" d="M22,19.5v-.3c-.1,0,0-.2,0-.2v.3c.1,0,0,.2,0,.2Z"/>
-            <path class="cls-13" d="M19,16.4l3.8,2.4v-.2c.1,0,0-.3,0-.3l-3.9-2.2v.2h.1Z"/>
-            <path class="cls-4" d="M18.9,16.1l3.8,2.4.2-.2-3.8-2.4-.2.2Z"/>
-            <path class="cls-10" d="M22.8,18.8v-.3c-.1,0,0-.2,0-.2v.3c.1,0,0,.2,0,.2Z"/>
-          </g>
+        <g transform="matrix(0.34793,-0.200877,0.800329,0.46207,-0.661847,3.238317)">
+            <path d="M8.976,7.794L8.976,19.053L-9.827,21.77L-9.827,10.512L8.976,7.794Z" style="fill:rgb(65,59,107);"/>
         </g>
-        <g id="a-3">
-          <g>
-            <path class="cls-12" d="M20.8,19.2l.7.4,1.6-1.4h0c0-.1-2.3.8-2.3.8,0,0,0,.1,0,.1Z"/>
-            <path class="cls-12" d="M23.9,21.4l.6.4,1.7-1.4h0c0,0-2.3.8-2.3.8,0,0,0,.2,0,.2Z"/>
-            <path class="cls-12" d="M22.4,20.3l.6.4,1.6-1.4h0c0-.1-2.2.9-2.2.9,0,0,0,.1,0,.1Z"/>
-            <path class="cls-2" d="M20.8,19.1l.7.4,1.6-1.3-.7-.4h0l-1.6,1.3Z"/>
-            <path class="cls-15" d="M23.9,21.2l.6.4,1.7-1.3-.7-.4h0l-1.6,1.3Z"/>
-            <path class="cls-7" d="M22.4,20.2l.6.4,1.6-1.4-.7-.4h0l-1.5,1.4Z"/>
-            <path class="cls-13" d="M21,18.9l3.8,2.4v-.2c0-.1,0-.3,0-.3l-3.9-2.2v.2h.1Z"/>
-            <path class="cls-4" d="M21.1,18.7l3.8,2.4.2-.2-3.8-2.4-.2.2Z"/>
-            <path class="cls-10" d="M24.8,21.3v-.2c.2-.2.3-.2.2-.2v.2c.1,0-.2.2-.2.2Z"/>
-            <path class="cls-13" d="M22,18.3l3.7,2.3h0c.1-.1,0-.4,0-.4l-3.9-2.2v.2h.1Z"/>
-            <path class="cls-4" d="M21.9,18l3.8,2.4.2-.2-3.8-2.4-.2.2Z"/>
-            <path class="cls-10" d="M25.7,20.7v-.3c-.1,0,.2-.2.2-.2v.3c.1,0-.2.2-.2.2Z"/>
-          </g>
+        <g transform="matrix(0.693105,-0.400165,0.800329,0.46207,2.444733,1.444733)">
+            <path d="M3.219,10.582L3.219,21.84L0,19.053L0,7.794L3.219,10.582Z" style="fill:rgb(0,25,97);"/>
         </g>
-      </g>
-      <polygon class="cls-6" points="24.3 22.1 17.2 17.7 17 17.8 24.1 22.2 24.3 22.1"/>
     </g>
-  </g>
 </svg>

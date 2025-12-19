@@ -189,6 +189,7 @@ namespace AssetUIManager.Systems
                     "CityPark",
                     "startsWith"
                 );
+                CleanUpServiceUpgrade();
             }
             catch (Exception ex)
             {
@@ -298,47 +299,46 @@ namespace AssetUIManager.Systems
                     : "Pathways";
                 DataCollectionSystem.assetCatDataDict.TryGetValue(itemName, out Entity itemValue);
                 if (
-                    EntityManager.TryGetComponent(itemValue, out PrefabData prefabData)
-                    && prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase)
-                    && prefabSystem.TryGetComponentData(prefabBase, out UIAssetCategoryData oldCat)
-                    && prefabSystem.TryGetComponentData(prefabBase, out UIObjectData uiObj)
-                )
-                {
-                    EntityManager.TryGetComponent(
+                    !EntityManager.TryGetComponent(itemValue, out PrefabData prefabData)
+                    || !prefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase)
+                    || !prefabSystem.TryGetComponentData(prefabBase, out UIAssetCategoryData oldCat)
+                    || !prefabSystem.TryGetComponentData(prefabBase, out UIObjectData uiObj)
+                    || !EntityManager.TryGetComponent(
                         DataCollectionSystem.assetCatDataDict[Neighbor],
                         out UIAssetCategoryData newCat
-                    );
+                    )
+                )
+                    return;
 
-                    RefreshBuffer(oldCat.m_Menu, newCat.m_Menu, itemName, itemValue);
+                RefreshBuffer(oldCat.m_Menu, newCat.m_Menu, itemName, itemValue);
 
-                    uiObj.m_Priority = priority;
-                    //if (log)
-                    //LogHelper.SendLog($"Moving {itemName} to {Neighbor} at {priority}");
+                uiObj.m_Priority = priority;
+                //if (log)
+                //LogHelper.SendLog($"Moving {itemName} to {Neighbor} at {priority}");
 
-                    oldCat.m_Menu = newCat.m_Menu;
-                    EntityManager.SetComponentData(itemValue, newCat);
-                    EntityManager.SetComponentData(itemValue, uiObj);
+                oldCat.m_Menu = newCat.m_Menu;
+                EntityManager.SetComponentData(itemValue, newCat);
+                EntityManager.SetComponentData(itemValue, uiObj);
 
-                    if (type != PathTypes.BikePaths)
-                    {
-                        bool pedInPath = Mod.m_Setting.PedestrianInPathway;
-                        if (!yes)
-                            pedInPath = false;
+                if (type != PathTypes.BikePaths)
+                {
+                    bool pedInPath = Mod.m_Setting.PedestrianInPathway;
+                    if (!yes)
+                        pedInPath = false;
 
-                        if (type != PathTypes.PiersAndQuays)
-                            ProcessMovingAssets(
-                                pedInPath,
-                                itemName,
-                                "",
-                                "",
-                                0,
-                                "Pedestrian Section",
-                                roadQuery,
-                                pedStreetAssetMenuData,
-                                "lane",
-                                Array.Empty<string>()
-                            );
-                    }
+                    if (type != PathTypes.PiersAndQuays)
+                        ProcessMovingAssets(
+                            pedInPath,
+                            itemName,
+                            "",
+                            "",
+                            0,
+                            "Pedestrian Section",
+                            roadQuery,
+                            pedStreetAssetMenuData,
+                            "lane",
+                            Array.Empty<string>()
+                        );
                 }
             }
             catch (Exception e)
@@ -354,13 +354,13 @@ namespace AssetUIManager.Systems
                 Entity clinicTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Clinics",
                     "Health & Deathcare",
-                    UIHostHelper.MGI("Healthcare"),
+                    UIHostHelper.Icon("Clinic"),
                     1
                 );
                 Entity hospitalTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC Hospitals",
                     "Health & Deathcare",
-                    UIHostHelper.Icon("Hospital"),
+                    UIHostHelper.MGI("Healthcare"),
                     2
                 );
                 Entity diseaseTab = CreateUIAssetCategoryPrefab(
@@ -469,7 +469,7 @@ namespace AssetUIManager.Systems
             else
             {
                 prefabSystem.TryGetPrefab(
-                    new PrefabID("UIAssetCategoryPrefab", "Healthcare"),
+                    new PrefabID(nameof(UIAssetCategoryPrefab), "Healthcare"),
                     out PrefabBase healthcare
                 );
                 if (healthcare != null)
@@ -480,17 +480,21 @@ namespace AssetUIManager.Systems
                         foreach (Entity entity in entities)
                         {
                             var name = prefabSystem.GetPrefabName(entity);
-                            EntityManager.TryGetComponent(entity, out PrefabData assetPrefabData);
-                            prefabSystem.TryGetPrefab(
-                                assetPrefabData,
-                                out PrefabBase assetPrefabBase
-                            );
-                            prefabSystem.TryGetComponentData(
-                                assetPrefabBase,
-                                out UIObjectData uiObj
-                            );
-
-                            if (!hospitalsAssetMenuData.Menu.ContainsKey(name))
+                            if (
+                                !EntityManager.TryGetComponent(
+                                    entity,
+                                    out PrefabData assetPrefabData
+                                )
+                                || !prefabSystem.TryGetPrefab(
+                                    assetPrefabData,
+                                    out PrefabBase assetPrefabBase
+                                )
+                                || !prefabSystem.TryGetComponentData(
+                                    assetPrefabBase,
+                                    out UIObjectData uiObj
+                                )
+                                || !hospitalsAssetMenuData.Menu.ContainsKey(name)
+                            )
                                 continue;
 
                             RefreshBuffer(
@@ -606,7 +610,7 @@ namespace AssetUIManager.Systems
             else
             {
                 prefabSystem.TryGetPrefab(
-                    new PrefabID("UIAssetCategoryPrefab", "Schools"),
+                    new PrefabID(nameof(UIAssetCategoryPrefab), "Schools"),
                     out PrefabBase schoolTab
                 );
                 if (schoolTab != null)
@@ -617,17 +621,22 @@ namespace AssetUIManager.Systems
                         foreach (Entity entity in entities)
                         {
                             var name = prefabSystem.GetPrefabName(entity);
-                            EntityManager.TryGetComponent(entity, out PrefabData assetPrefabData);
-                            prefabSystem.TryGetPrefab(
-                                assetPrefabData,
-                                out PrefabBase assetPrefabBase
-                            );
-                            prefabSystem.TryGetComponentData(
-                                assetPrefabBase,
-                                out UIObjectData uiObj
-                            );
 
-                            if (!schoolsAssetMenuData.Menu.ContainsKey(name))
+                            if (
+                                !EntityManager.TryGetComponent(
+                                    entity,
+                                    out PrefabData assetPrefabData
+                                )
+                                || !prefabSystem.TryGetPrefab(
+                                    assetPrefabData,
+                                    out PrefabBase assetPrefabBase
+                                )
+                                || !prefabSystem.TryGetComponentData(
+                                    assetPrefabBase,
+                                    out UIObjectData uiObj
+                                )
+                                || !schoolsAssetMenuData.Menu.ContainsKey(name)
+                            )
                                 continue;
 
                             RefreshBuffer(
@@ -657,13 +666,13 @@ namespace AssetUIManager.Systems
                 Entity localPD = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC LocalPolice",
                     "Police & Administration",
-                    UIHostHelper.MGI("Police"),
+                    UIHostHelper.Icon("LocalPD"),
                     1
                 );
                 Entity hqTab = CreateUIAssetCategoryPrefab(
                     "StarQ_UIC PoliceHQ",
                     "Police & Administration",
-                    UIHostHelper.Icon("PoliceHQ"),
+                    UIHostHelper.MGI("Police"),
                     2
                 );
                 Entity intelTab = CreateUIAssetCategoryPrefab(
@@ -758,7 +767,7 @@ namespace AssetUIManager.Systems
             else
             {
                 prefabSystem.TryGetPrefab(
-                    new PrefabID("UIAssetCategoryPrefab", "Police"),
+                    new PrefabID(nameof(UIAssetCategoryPrefab), "Police"),
                     out PrefabBase policeTab
                 );
                 if (policeTab != null)
@@ -769,17 +778,21 @@ namespace AssetUIManager.Systems
                         foreach (Entity entity in entities)
                         {
                             var name = prefabSystem.GetPrefabName(entity);
-                            EntityManager.TryGetComponent(entity, out PrefabData assetPrefabData);
-                            prefabSystem.TryGetPrefab(
-                                assetPrefabData,
-                                out PrefabBase assetPrefabBase
-                            );
-                            prefabSystem.TryGetComponentData(
-                                assetPrefabBase,
-                                out UIObjectData uiObj
-                            );
-
-                            if (!policeAssetMenuData.Menu.ContainsKey(name))
+                            if (
+                                !EntityManager.TryGetComponent(
+                                    entity,
+                                    out PrefabData assetPrefabData
+                                )
+                                || !prefabSystem.TryGetPrefab(
+                                    assetPrefabData,
+                                    out PrefabBase assetPrefabBase
+                                )
+                                || !prefabSystem.TryGetComponentData(
+                                    assetPrefabBase,
+                                    out UIObjectData uiObj
+                                )
+                                || !policeAssetMenuData.Menu.ContainsKey(name)
+                            )
                                 continue;
 
                             RefreshBuffer(
@@ -840,10 +853,7 @@ namespace AssetUIManager.Systems
                                 assetPrefabData,
                                 out PrefabBase assetPrefabBase
                             )
-                        )
-                            continue;
-                        if (
-                            !prefabSystem.TryGetComponentData(
+                            || !prefabSystem.TryGetComponentData(
                                 assetPrefabBase,
                                 out UIObjectData assetUIObject
                             )
@@ -953,27 +963,27 @@ namespace AssetUIManager.Systems
                                 }
 
                                 if (
-                                    EntityManager.TryGetComponent(
+                                    !EntityManager.TryGetComponent(
                                         currentTab,
                                         out PrefabData currentTabPrefabData
                                     )
-                                    && prefabSystem.TryGetPrefab(
+                                    || !prefabSystem.TryGetPrefab(
                                         currentTabPrefabData,
                                         out PrefabBase currentTabPrefabBase
                                     )
-                                    && prefabSystem.TryGetComponentData(
+                                    || !prefabSystem.TryGetComponentData(
                                         currentTabPrefabBase,
                                         out UIObjectData currentTabUIObject
                                     )
                                 )
-                                {
-                                    RefreshBuffer(currentTab, tab, name, entity);
-                                    int newPriority =
-                                        (currentTabUIObject.m_Priority * 1000) + currentPriority;
-                                    assetUIObject.m_Priority = newPriority;
-                                    assetUIObject.m_Group = tab;
-                                    EntityManager.SetComponentData(entity, assetUIObject);
-                                }
+                                    continue;
+
+                                RefreshBuffer(currentTab, tab, name, entity);
+                                int newPriority =
+                                    (currentTabUIObject.m_Priority * 1000) + currentPriority;
+                                assetUIObject.m_Priority = newPriority;
+                                assetUIObject.m_Group = tab;
+                                EntityManager.SetComponentData(entity, assetUIObject);
                             }
                             catch (Exception e)
                             {
@@ -991,7 +1001,7 @@ namespace AssetUIManager.Systems
             {
                 if (
                     prefabSystem.TryGetPrefab(
-                        new PrefabID("UIAssetCategoryPrefab", UIAssetCategoryName.ToString()),
+                        new PrefabID(nameof(UIAssetCategoryPrefab), UIAssetCategoryName.ToString()),
                         out PrefabBase tab
                     )
                 )
@@ -1014,16 +1024,12 @@ namespace AssetUIManager.Systems
                                     assetPrefabData,
                                     out PrefabBase assetPrefabBase
                                 )
-                            )
-                                continue;
-                            if (
-                                !prefabSystem.TryGetComponentData(
+                                || !prefabSystem.TryGetComponentData(
                                     assetPrefabBase,
                                     out UIObjectData assetUIObject
                                 )
+                                || !assetMenuData.Menu.ContainsKey(name)
                             )
-                                continue;
-                            if (!assetMenuData.Menu.ContainsKey(name))
                                 continue;
 
                             bool isValid = false;
@@ -1073,7 +1079,7 @@ namespace AssetUIManager.Systems
         {
             if (
                 !prefabSystem.TryGetPrefab(
-                    new PrefabID("UIAssetCategoryPrefab", name.ToString()),
+                    new PrefabID(nameof(UIAssetCategoryPrefab), name.ToString()),
                     out PrefabBase tab
                 )
             )
@@ -1111,8 +1117,6 @@ namespace AssetUIManager.Systems
             DynamicBuffer<UIGroupElement> uiGroupElementbuffer =
                 EntityManager.GetBuffer<UIGroupElement>(oldCat);
 
-            //var itemName = prefabSystem.GetPrefabName(moverEntity);
-            //var tabNameOld = prefabSystem.GetPrefabName(oldCat);
             for (int i = 0; i < uiGroupElementbuffer.Length; i++)
             {
                 var uge = uiGroupElementbuffer[i].m_Prefab;
@@ -1120,18 +1124,70 @@ namespace AssetUIManager.Systems
                 if (tabName == moverName)
                 {
                     uiGroupElementbuffer.RemoveAt(i);
-                    //LogHelper.SendLog($"Removing {itemName} from {tabNameOld}");
                     break;
                 }
             }
 
-            //var tabNameNew = prefabSystem.GetPrefabName(newCat);
             EntityManager.GetBuffer<UIGroupElement>(newCat).Add(new UIGroupElement(moverEntity));
             EntityManager
                 .GetBuffer<UnlockRequirement>(newCat)
                 .Add(new UnlockRequirement(moverEntity, UnlockFlags.RequireAny));
-            //if (log)
-            //LogHelper.SendLog($"Adding {itemName} to {tabNameNew}");
+        }
+
+        private void RefreshBuffer(Entity oldCat, string moverName)
+        {
+            DynamicBuffer<UIGroupElement> uiGroupElementbuffer =
+                EntityManager.GetBuffer<UIGroupElement>(oldCat);
+
+            for (int i = uiGroupElementbuffer.Length - 1; i >= 0; i--)
+            {
+                var uge = uiGroupElementbuffer[i].m_Prefab;
+                var ugi = prefabSystem.GetPrefabName(uge);
+                if (ugi == moverName)
+                {
+                    uiGroupElementbuffer.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        private void CleanUpServiceUpgrade()
+        {
+            var serviceUpgQuery = SystemAPI
+                .QueryBuilder()
+                .WithAll<ServiceUpgradeData, UIObjectData>()
+                .Build();
+            using var upgEntities = serviceUpgQuery.ToEntityArray(Allocator.Temp);
+
+            Dictionary<Entity, List<string>> groupsToClean = new();
+            foreach (Entity entity in upgEntities)
+            {
+                if (
+                    EntityManager.TryGetComponent(entity, out UIObjectData uio)
+                    && uio.m_Group != Entity.Null
+                )
+                {
+                    try
+                    {
+                        string moverName = prefabSystem.GetPrefabName(entity);
+                        if (!groupsToClean.ContainsKey(uio.m_Group))
+                            groupsToClean[uio.m_Group] = new List<string>();
+                        groupsToClean[uio.m_Group].Add(moverName);
+                        uio.m_Group = Entity.Null;
+                        EntityManager.SetComponentData(entity, uio);
+                    }
+                    catch (Exception e)
+                    {
+                        LogHelper.SendLog(e, LogLevel.Error);
+                    }
+                }
+            }
+
+            foreach (var entityGroup in groupsToClean)
+            {
+                foreach (var item in entityGroup.Value)
+                    RefreshBuffer(entityGroup.Key, item);
+            }
         }
     }
 }
