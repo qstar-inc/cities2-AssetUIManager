@@ -1,0 +1,1 @@
+- Add try/catch on UI Host instantiation to avoid crashing the mod if the UI Host fails to load.

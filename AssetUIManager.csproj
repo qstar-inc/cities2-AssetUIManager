@@ -3,7 +3,7 @@
     <Configurations>Debug;Release</Configurations>
     <AssemblyName>AssetUIManager</AssemblyName>
     <AssemblyTitle>Asset UI Manager</AssemblyTitle>
-    <Version>1.3.0</Version>
+    <Version>1.3.1</Version>
     <Authors>StarQ</Authors>
     <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
     <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
@@ -13,10 +13,22 @@
   <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
   <Import Project="..\..\ModsPersonal\StarQ.Shared\StarQ.Shared.projitems" Label="Shared" />
   <ItemGroup>
-    <Reference Include="Game">
+    <Reference Include="Colossal.AssetPipeline">
       <Private>false</Private>
     </Reference>
-    <Reference Include="Colossal.AssetPipeline">
+    <Reference Include="Colossal.Mathematics">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Colossal.PSI.Common">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Colossal.PSI.PdxSdk">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PDX.SDK">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Game">
       <Private>false</Private>
     </Reference>
     <Reference Include="Colossal.Core">
@@ -26,9 +38,6 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="Colossal.IO.AssetDatabase">
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Colossal.PSI.Common">
       <Private>false</Private>
     </Reference>
     <Reference Include="Colossal.UI">
@@ -92,4 +101,21 @@
     <Folder Include="Extensions\" />
     <Folder Include="Locale\" />
   </ItemGroup>
+  <Target Name="SetupAttributes" BeforeTargets="BeforeBuild">
+    <XmlPoke
+      XmlInputPath="$(PublishConfigurationPath)"
+      Value="$([System.IO.File]::ReadAllText(Properties/LongDescription.md))"
+      Query="//LongDescription"
+    />
+    <XmlPoke
+      XmlInputPath="$(PublishConfigurationPath)"
+      Value="$([System.IO.File]::ReadAllText(Properties/ChangeLog.md))"
+      Query="//ChangeLog"
+    />
+    <XmlPoke
+      XmlInputPath="$(PublishConfigurationPath)"
+      Value="$(Version)"
+      Query="//ModVersion/@Value"
+    />
+  </Target>
 </Project>

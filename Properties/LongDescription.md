@@ -1,8 +1,4 @@
-<Publish>
-  <ModId Value="98560" />
-  <DisplayName Value="Asset UI Manager" />
-  <ShortDescription Value="Move/split/add/sort various assets in the asset UI in an orderly manner." />
-  <LongDescription># Asset UI Manager
+# Asset UI Manager
 Tired of scrolling the asset UI clogged with so many assets? Can't find the specific asset depo you're looking for? Then this is the second best option after Find It.
 
 Asset UI Manager can reposition elements in the ... Asset UI.
@@ -30,21 +26,4 @@ Asset UI Manager can reposition elements in the ... Asset UI.
 * irasponsible for feedback, testing and the Education icons.
 * Konsi/Mimonsi, GamingNerdLeith for feedback and testing.
 * Everyone else who participated in the beta testing of the mod in [Cities Skylines Modding](https://discord.com/channels/1024242828114673724/1315403052953505964) server.
-*</LongDescription>
-  <Thumbnail Value="Properties/Thumbnail.png" />
-  <Screenshot Value="Properties/Screenshot01.png" />
-  <Screenshot Value="Properties/Screenshot02.png" />
-  <Screenshot Value="Properties/Screenshot03.png" />
-  <Screenshot Value="Properties/Screenshot04.png" />
-  <!--Screenshot Value="Properties/Screenshot05.png" /-->
-  <Screenshot Value="Properties/Screenshot06.png" />
-  <Tag Value="Code Mod" />
-  <ForumLink Value="" />
-  <ModVersion Value="1.3.1" />
-  <GameVersion Value="1.5*" />
-  <ChangeLog>- Add try/catch on UI Host instantiation to avoid crashing the mod if the UI Host fails to load.</ChangeLog>
-  <ExternalLink Type="github" Url="https://github.com/qstar-inc/cities2-AssetUIManager" />
-  <ExternalLink Type="discord" Url="https://discord.gg/U2PSjUzUuF" />
-  <ExternalLink Type="buymeacoffee" Url="https://buymeacoffee.com/starq" />
-  <ExternalLink Type="crowdin" Url="https://crowdin.com/project/cities2-mods" />
-</Publish>
+* 
