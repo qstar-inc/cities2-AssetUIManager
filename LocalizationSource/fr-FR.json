@@ -1,0 +1,12 @@
+{
+  "AssetUIManager.Mod.XinXMenu_Label": "Onglet {1} dans le menu {2}",
+  "AssetUIManager.Mod.XinXMenu_Desc": "Déplacer les onglets **{1}** dans le menu **{2}** au lieu du menu **{3}**.",
+  "AssetUIManager.Mod.SeparatedTabs_Label": "Onglets {1} séparés",
+  "AssetUIManager.Mod.SeparatedTabs_Desc": "Déplacez tous les **{1}** vers de nouveaux onglets selon leur fonction.",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Label": "Onglets {1} séparés dans le menu {2}",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "Déplacez toutes les **{1}** dans un nouvel onglet dans le menu **{2}**.",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "Rues piétonnes dans l’onglet {AssetUIManager.Replacement.Pathway}",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "Déplacer toutes les **rues piétonnes** dans l’onglet **{AssetUIManager.Replacement.Pathway}**.",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "Onglets distincts pour le contrôle des maladies et la recherche en santé",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "Déplacez les **centres de contrôle des maladies** et les **instituts de recherche en santé** vers leurs propres nouveaux onglets."
+}

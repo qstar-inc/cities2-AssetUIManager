@@ -1,0 +1,12 @@
+{
+  "AssetUIManager.Mod.XinXMenu_Label": "{2} 메뉴 내 {1} 탭",
+  "AssetUIManager.Mod.XinXMenu_Desc": "{1} 탭을 {3} 메뉴 대신 {2} 메뉴에 표시.",
+  "AssetUIManager.Mod.SeparatedTabs_Label": "{1}개별 탭으로 분리",
+  "AssetUIManager.Mod.SeparatedTabs_Desc": "모든 **{1}** 항목을 기능별 전용 탭으로 이동.",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Label": "{2} 메뉴의 {1} 항목을 개별 탭으로 분리",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "모든 **{1}** 항목을 **{2}** 메뉴의 새 탭으로 이동.",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "{AssetUIManager.Replacement.Pathway} 탭의 보행자 전용 도로",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "**{AssetUIManager.Replacement.Pathway}** 탭을 **Pedestrian Streets**로 전부 이동.",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "질병 통제 및 건강 연구 탭 분리",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "**Disease Control Centers**와 *Health Research Institutes**를 각각 새로운 전용 탭으로 이동해 주세요."
+}

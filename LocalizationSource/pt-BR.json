@@ -1,0 +1,12 @@
+{
+  "AssetUIManager.Mod.XinXMenu_Label": "Separador {1} no menu {2}",
+  "AssetUIManager.Mod.XinXMenu_Desc": "Mover os separadores **{1}** para o menu **{2}** em vez do menu **{3}**.",
+  "AssetUIManager.Mod.SeparatedTabs_Label": "Separadores {1} distintos",
+  "AssetUIManager.Mod.SeparatedTabs_Desc": "Mover todos os **{1}** para novos separadores de acordo com a sua função.",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Label": "Separadores {1} distintos no menu {2}",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "Mover todos os **{1}** para um novo separador no menu **{2}**.",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "Estradas Pedonais no separador {AssetUIManager.Replacement.Pathway}",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "Mover todas as **Estradas Pedonais** para o separador **{AssetUIManager.Replacement.Pathway}**.",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "Separadores distintos para Controle de Doenças e Institutos de Investigação Médica",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "Mover **Centros de Controle de Doenças** e **Institutos de Investigação Médica** para novos separadores próprios."
+}

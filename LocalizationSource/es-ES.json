@@ -1,0 +1,12 @@
+{
+  "AssetUIManager.Mod.XinXMenu_Label": "Pestaña {1} en el menú {2}",
+  "AssetUIManager.Mod.XinXMenu_Desc": "Mover la pestaña **{1}** al menú **{2}** en lugar de **{3}** menú.",
+  "AssetUIManager.Mod.SeparatedTabs_Label": "Se separaron {1} pestañas",
+  "AssetUIManager.Mod.SeparatedTabs_Desc": "Mueve todos los **{1}** a nuevas pestañas de acuerdo a su función.",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Label": "Separadas {1} pestañas en el menú {2}",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "Mueve todos los **{1}** a una nueva pestaña en el menú **{2}.",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "Calle peatonal en la pestaña {AssetUIManager.Replacement.Pathway}",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "Mueve todas las **calles peatonales** a la pestaña **{AssetUIManager.Replacement.Pathway}**.",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "Centros de Control de Enfermedades y de Investigación Médica en pestaña separada",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "Mover **Centros de Control de Enfermedades** y **Institutos de Investigación de Salud** a pestañas separadas."
+}

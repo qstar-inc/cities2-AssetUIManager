@@ -80,11 +80,14 @@ namespace AssetUIManager
         [SettingsUISection(GeneralTab, ServiceGroup)]
         public bool SeparatedCityParks { get; set; } = true;
 
-        [SettingsUISection(GeneralTab, AssetPackGroup)]
-        public bool BaseGameAssetPacks { get; set; } = true;
+        //[SettingsUISection(GeneralTab, AssetPackGroup)]
+        //public bool BaseGameAssetPacks { get; set; } = true;
 
-        [SettingsUISection(GeneralTab, AssetPackGroup)]
-        public bool EnableAssetPacks { get; set; } = true;
+        //[SettingsUISection(GeneralTab, AssetPackGroup)]
+        //public bool PDXModsAssetPacks { get; set; } = true;
+
+        //[SettingsUISection(GeneralTab, AssetPackGroup)]
+        //public bool EnableAssetPacks { get; set; } = true;
 
         //[SettingsUISection(GeneralTab, InfoGroup)]
         //public bool VerboseLogging { get; set; } = false;
@@ -105,8 +108,9 @@ namespace AssetUIManager
             SeparatedPolice = true;
             SeparatedPocketParks = true;
             SeparatedCityParks = true;
-            BaseGameAssetPacks = true;
-            EnableAssetPacks = true;
+            //BaseGameAssetPacks = true;
+            //PDXModsAssetPacks = true;
+            //EnableAssetPacks = true;
         }
 
         //public DropdownItem<int>[] GetPathwayPriorityDropdownItems()

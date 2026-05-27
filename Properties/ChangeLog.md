@@ -1,1 +1,3 @@
-- Add try/catch on UI Host instantiation to avoid crashing the mod if the UI Host fails to load.
+- Disabled all asset packs to prevent conflicts with base game asset pack filters.
+- All UI assets are now packaged.
+- Localizations are now published as static files.

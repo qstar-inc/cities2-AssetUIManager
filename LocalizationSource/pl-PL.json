@@ -1,0 +1,12 @@
+{
+  "AssetUIManager.Mod.XinXMenu_Label": "Zakładka {1} w menu {2}",
+  "AssetUIManager.Mod.XinXMenu_Desc": "Przenieś zakładkę **{1}** do menu **{2}** z menu **{3}**.",
+  "AssetUIManager.Mod.SeparatedTabs_Label": "Rozdziel zakładkę {1}",
+  "AssetUIManager.Mod.SeparatedTabs_Desc": "Przenieś wszystkie **{1}** do nowych zakładek według ich funkcji.",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Label": "Rozdziel zakładkę {1} w menu {2}",
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "Przenieś wszystkie **{1}** do nowej zakładki w menu **{2}**.",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "Deptaki w zakładce {AssetUIManager.Replacement.Pathway}",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "Przenieś wszystkie **Deptaki** do zakładki **{AssetUIManager.Replacement.Pathway}**.",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "Rozdziel zakładki Zapobiegania chorobom i Badań zdrowia",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "Przenieś **Centra zapobiegania chorobom** i **instytuty badań zdrowia** do nowych zakładek."
+}

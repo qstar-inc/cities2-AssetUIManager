@@ -43,9 +43,11 @@ namespace AssetUIManager
             m_Setting.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(AssetUIManager), m_Setting, new Setting(this));
 
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<DataCollectionSystem>();
+            updateSystem.UpdateAfter<ContentSystem>(SystemUpdatePhase.PrefabUpdate);
+            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<DataCollectionSystem>();
+            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ContentSystem>();
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
+            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
         }
 
         public void OnDispose()
@@ -113,7 +115,7 @@ namespace AssetUIManager
                     "BridgesInRoads",
                     new List<string>()
                     {
-                        LocaleHelper.GetSubserviceName("StarQ_UIC RoadsBridges"),
+                        LocaleHelper.GetSubserviceName(AUM_Contents.RoadsBridges.Name),
                         LocaleHelper.GetServiceName("Roads"),
                     }
                 },
@@ -121,7 +123,7 @@ namespace AssetUIManager
                     "ParkingRoadsInRoads",
                     new List<string>()
                     {
-                        LocaleHelper.GetSubserviceName("StarQ_UIC RoadsParkingRoads"),
+                        LocaleHelper.GetSubserviceName(AUM_Contents.RoadsParkingRoads.Name),
                         LocaleHelper.GetServiceName("Roads"),
                     }
                 },
@@ -129,7 +131,7 @@ namespace AssetUIManager
                     "SeparatedPocketParks",
                     new List<string>()
                     {
-                        LocaleHelper.GetSubserviceName("StarQ_UIC PocketParks"),
+                        LocaleHelper.GetSubserviceName(AUM_Contents.PocketParks.Name),
                         LocaleHelper.GetServiceName("Parks & Recreation"),
                     }
                 },
@@ -137,7 +139,7 @@ namespace AssetUIManager
                     "SeparatedCityParks",
                     new List<string>()
                     {
-                        LocaleHelper.GetSubserviceName("StarQ_UIC CityParks"),
+                        LocaleHelper.GetSubserviceName(AUM_Contents.CityParks.Name),
                         LocaleHelper.GetServiceName("Parks & Recreation"),
                     }
                 },
