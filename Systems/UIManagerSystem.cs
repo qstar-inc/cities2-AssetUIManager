@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Colossal.Entities;
-using Colossal.IO.AssetDatabase;
 using Colossal.Serialization.Entities;
 using Game;
 using Game.Prefabs;
 using StarQ.Shared.Extensions;
 using Unity.Collections;
 using Unity.Entities;
-using UnityEngine;
 
 namespace AssetUIManager.Systems
 {
@@ -78,6 +76,7 @@ namespace AssetUIManager.Systems
         protected override void OnGamePreload(Purpose purpose, GameMode mode)
         {
             base.OnGamePreload(purpose, mode);
+
             RefreshOrDisable();
         }
 
@@ -107,6 +106,18 @@ namespace AssetUIManager.Systems
 
         public void RefreshUI()
         {
+            if (!WorldHelper.IsGame)
+            {
+                LogHelper.SendLog("Not in game, skipping UI refresh");
+                return;
+            }
+
+            if (!ContentSystem.EntitiesAssigned)
+            {
+                LogHelper.SendLog("Entities not assigned yet, skipping UI refresh");
+                return;
+            }
+
             if (Mod.m_Setting == null || !NeedUpdate)
                 return;
 
@@ -334,6 +345,26 @@ namespace AssetUIManager.Systems
                 Entity researchTab = AUM_Contents.HealthResearchCenters.Entity;
                 Entity mergedControlAndResearchTab = AUM_Contents.HealthResearchCenters.Entity;
 
+                if (
+                    clinicTab == Entity.Null
+                    || hospitalTab == Entity.Null
+                    || diseaseTab == Entity.Null
+                    || researchTab == Entity.Null
+                    || mergedControlAndResearchTab == Entity.Null
+                )
+                {
+                    LogHelper.CheckNull(clinicTab, "Clinic Tab", "Not found");
+                    LogHelper.CheckNull(hospitalTab, "Hospital Tab", "Not found");
+                    LogHelper.CheckNull(diseaseTab, "Disease Control Tab", "Not found");
+                    LogHelper.CheckNull(researchTab, "Health Research Tab", "Not found");
+                    LogHelper.CheckNull(
+                        mergedControlAndResearchTab,
+                        "Merged Control and Research Tab",
+                        "Not found"
+                    );
+                    return;
+                }
+
                 try
                 {
                     Entity hospitalCat = AUM_Contents.Healthcare.Entity;
@@ -419,51 +450,41 @@ namespace AssetUIManager.Systems
             }
             else
             {
-                prefabSystem.TryGetPrefab(
-                    new PrefabID(nameof(UIAssetCategoryPrefab), "Healthcare"),
-                    out PrefabBase healthcare
-                );
-                if (healthcare != null)
+                try
                 {
-                    try
+                    var entities = hospitalQuery.ToEntityArray(Allocator.Temp);
+                    foreach (Entity entity in entities)
                     {
-                        var entities = hospitalQuery.ToEntityArray(Allocator.Temp);
-                        foreach (Entity entity in entities)
-                        {
-                            var name = prefabSystem.GetPrefabName(entity);
-                            if (
-                                !EntityManager.TryGetComponent(
-                                    entity,
-                                    out PrefabData assetPrefabData
-                                )
-                                || !prefabSystem.TryGetPrefab(
-                                    assetPrefabData,
-                                    out PrefabBase assetPrefabBase
-                                )
-                                || !prefabSystem.TryGetComponentData(
-                                    assetPrefabBase,
-                                    out UIObjectData uiObj
-                                )
-                                || !hospitalsAssetMenuData.Menu.ContainsKey(name)
+                        var name = prefabSystem.GetPrefabName(entity);
+                        if (
+                            !EntityManager.TryGetComponent(entity, out PrefabData assetPrefabData)
+                            || !prefabSystem.TryGetPrefab(
+                                assetPrefabData,
+                                out PrefabBase assetPrefabBase
                             )
-                                continue;
+                            || !prefabSystem.TryGetComponentData(
+                                assetPrefabBase,
+                                out UIObjectData uiObj
+                            )
+                            || !hospitalsAssetMenuData.Menu.ContainsKey(name)
+                        )
+                            continue;
 
-                            RefreshBuffer(
-                                uiObj.m_Group,
-                                hospitalsAssetMenuData.Menu[name],
-                                name,
-                                entity
-                            );
+                        RefreshBuffer(
+                            uiObj.m_Group,
+                            hospitalsAssetMenuData.Menu[name],
+                            name,
+                            entity
+                        );
 
-                            uiObj.m_Group = hospitalsAssetMenuData.Menu[name];
-                            uiObj.m_Priority = hospitalsAssetMenuData.Priority[name];
-                            EntityManager.SetComponentData(entity, uiObj);
-                        }
+                        uiObj.m_Group = hospitalsAssetMenuData.Menu[name];
+                        uiObj.m_Priority = hospitalsAssetMenuData.Priority[name];
+                        EntityManager.SetComponentData(entity, uiObj);
                     }
-                    catch (Exception e)
-                    {
-                        LogHelper.SendLog(e, LogLevel.Error);
-                    }
+                }
+                catch (Exception e)
+                {
+                    LogHelper.SendLog(e, LogLevel.Error);
                 }
             }
         }
@@ -488,6 +509,7 @@ namespace AssetUIManager.Systems
                     LogHelper.CheckNull(edu2Tab, "Education Tab 2", "Not found");
                     LogHelper.CheckNull(edu3Tab, "Education Tab 3", "Not found");
                     LogHelper.CheckNull(edu4Tab, "Education Tab 4", "Not found");
+                    return;
                 }
 
                 try
@@ -552,52 +574,37 @@ namespace AssetUIManager.Systems
             }
             else
             {
-                prefabSystem.TryGetPrefab(
-                    new PrefabID(nameof(UIAssetCategoryPrefab), "Schools"),
-                    out PrefabBase schoolTab
-                );
-                if (schoolTab != null)
+                try
                 {
-                    try
+                    var entities = educationQuery.ToEntityArray(Allocator.Temp);
+                    foreach (Entity entity in entities)
                     {
-                        var entities = educationQuery.ToEntityArray(Allocator.Temp);
-                        foreach (Entity entity in entities)
-                        {
-                            var name = prefabSystem.GetPrefabName(entity);
+                        var name = prefabSystem.GetPrefabName(entity);
 
-                            if (
-                                !EntityManager.TryGetComponent(
-                                    entity,
-                                    out PrefabData assetPrefabData
-                                )
-                                || !prefabSystem.TryGetPrefab(
-                                    assetPrefabData,
-                                    out PrefabBase assetPrefabBase
-                                )
-                                || !prefabSystem.TryGetComponentData(
-                                    assetPrefabBase,
-                                    out UIObjectData uiObj
-                                )
-                                || !schoolsAssetMenuData.Menu.ContainsKey(name)
+                        if (
+                            !EntityManager.TryGetComponent(entity, out PrefabData assetPrefabData)
+                            || !prefabSystem.TryGetPrefab(
+                                assetPrefabData,
+                                out PrefabBase assetPrefabBase
                             )
-                                continue;
+                            || !prefabSystem.TryGetComponentData(
+                                assetPrefabBase,
+                                out UIObjectData uiObj
+                            )
+                            || !schoolsAssetMenuData.Menu.ContainsKey(name)
+                        )
+                            continue;
 
-                            RefreshBuffer(
-                                uiObj.m_Group,
-                                schoolsAssetMenuData.Menu[name],
-                                name,
-                                entity
-                            );
+                        RefreshBuffer(uiObj.m_Group, schoolsAssetMenuData.Menu[name], name, entity);
 
-                            uiObj.m_Group = schoolsAssetMenuData.Menu[name];
-                            uiObj.m_Priority = schoolsAssetMenuData.Priority[name];
-                            EntityManager.SetComponentData(entity, uiObj);
-                        }
+                        uiObj.m_Group = schoolsAssetMenuData.Menu[name];
+                        uiObj.m_Priority = schoolsAssetMenuData.Priority[name];
+                        EntityManager.SetComponentData(entity, uiObj);
                     }
-                    catch (Exception e)
-                    {
-                        LogHelper.SendLog(e, LogLevel.Error);
-                    }
+                }
+                catch (Exception e)
+                {
+                    LogHelper.SendLog(e, LogLevel.Error);
                 }
             }
         }
@@ -611,6 +618,19 @@ namespace AssetUIManager.Systems
                 Entity intelTab = AUM_Contents.Intelligences.Entity;
                 Entity prisonTab = AUM_Contents.Prisons.Entity;
 
+                if (
+                    localPD == Entity.Null
+                    || hqTab == Entity.Null
+                    || intelTab == Entity.Null
+                    || prisonTab == Entity.Null
+                )
+                {
+                    LogHelper.CheckNull(localPD, "Local PD Tab", "Not found");
+                    LogHelper.CheckNull(hqTab, "Police HQ Tab", "Not found");
+                    LogHelper.CheckNull(intelTab, "Intelligence Tab", "Not found");
+                    LogHelper.CheckNull(prisonTab, "Prison Tab", "Not found");
+                    return;
+                }
                 try
                 {
                     Entity policeCat = AUM_Contents.Police.Entity;
@@ -688,51 +708,36 @@ namespace AssetUIManager.Systems
             }
             else
             {
-                prefabSystem.TryGetPrefab(
-                    new PrefabID(nameof(UIAssetCategoryPrefab), "Police"),
-                    out PrefabBase policeTab
-                );
-                if (policeTab != null)
+                try
                 {
-                    try
+                    var entities = policeQuery.ToEntityArray(Allocator.Temp);
+                    foreach (Entity entity in entities)
                     {
-                        var entities = policeQuery.ToEntityArray(Allocator.Temp);
-                        foreach (Entity entity in entities)
-                        {
-                            var name = prefabSystem.GetPrefabName(entity);
-                            if (
-                                !EntityManager.TryGetComponent(
-                                    entity,
-                                    out PrefabData assetPrefabData
-                                )
-                                || !prefabSystem.TryGetPrefab(
-                                    assetPrefabData,
-                                    out PrefabBase assetPrefabBase
-                                )
-                                || !prefabSystem.TryGetComponentData(
-                                    assetPrefabBase,
-                                    out UIObjectData uiObj
-                                )
-                                || !policeAssetMenuData.Menu.ContainsKey(name)
+                        var name = prefabSystem.GetPrefabName(entity);
+                        if (
+                            !EntityManager.TryGetComponent(entity, out PrefabData assetPrefabData)
+                            || !prefabSystem.TryGetPrefab(
+                                assetPrefabData,
+                                out PrefabBase assetPrefabBase
                             )
-                                continue;
+                            || !prefabSystem.TryGetComponentData(
+                                assetPrefabBase,
+                                out UIObjectData uiObj
+                            )
+                            || !policeAssetMenuData.Menu.ContainsKey(name)
+                        )
+                            continue;
 
-                            RefreshBuffer(
-                                uiObj.m_Group,
-                                policeAssetMenuData.Menu[name],
-                                name,
-                                entity
-                            );
+                        RefreshBuffer(uiObj.m_Group, policeAssetMenuData.Menu[name], name, entity);
 
-                            uiObj.m_Group = policeAssetMenuData.Menu[name];
-                            uiObj.m_Priority = policeAssetMenuData.Priority[name];
-                            EntityManager.SetComponentData(entity, uiObj);
-                        }
+                        uiObj.m_Group = policeAssetMenuData.Menu[name];
+                        uiObj.m_Priority = policeAssetMenuData.Priority[name];
+                        EntityManager.SetComponentData(entity, uiObj);
                     }
-                    catch (Exception e)
-                    {
-                        LogHelper.SendLog(e, LogLevel.Error);
-                    }
+                }
+                catch (Exception e)
+                {
+                    LogHelper.SendLog(e, LogLevel.Error);
                 }
             }
         }

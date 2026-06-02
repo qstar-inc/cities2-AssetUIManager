@@ -231,7 +231,7 @@ namespace AssetUIManager.Systems
 
     public partial class ContentSystem : GameSystemBase
     {
-        private static bool EntitiesAssigned = false;
+        internal static bool EntitiesAssigned = false;
 
         protected override void OnGamePreload(Purpose purpose, GameMode mode)
         {

@@ -28,16 +28,16 @@ namespace AssetUIManager
         public static ILog log = LogManager.GetLogger($"{Id}").SetShowsErrorsInUI(false);
         public static Setting m_Setting;
 
-        public static string uiHostName = "starq-asset-ui-manager";
+        //public static string uiHostName = "starq-asset-ui-manager";
 
         public void OnLoad(UpdateSystem updateSystem)
         {
             LogHelper.Init(Id, log);
             LocaleHelper.Init(Id, Name, GetReplacements, AddLocale);
-            UIHostHelper.Init(Id, uiHostName);
+            //UIHostHelper.Init(Id, uiHostName);
 
-            if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
-                UIHostHelper.LoadUIHost(asset);
+            //if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+            //    UIHostHelper.LoadUIHost(asset);
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
@@ -62,7 +62,7 @@ namespace AssetUIManager
                 m_Setting.UnregisterInOptionsUI();
                 m_Setting = null;
             }
-            UIManager.defaultUISystem.RemoveHostLocation(uiHostName);
+            //UIManager.defaultUISystem.RemoveHostLocation(uiHostName);
         }
 
         public static Dictionary<string, string> GetReplacements()

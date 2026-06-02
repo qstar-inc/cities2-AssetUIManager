@@ -1,13 +1,8 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using AssetUIManager.Systems;
 using Colossal.IO.AssetDatabase;
 using Colossal.Json;
 using Game.Modding;
 using Game.Settings;
-using Game.UI.Widgets;
 using StarQ.Shared.Extensions;
-using Unity.Entities;
 
 namespace AssetUIManager
 {

@@ -1,3 +1,2 @@
-- Disabled all asset packs to prevent conflicts with base game asset pack filters.
-- All UI assets are now packaged.
-- Localizations are now published as static files.
+- Fixed error on opening the Editor right after opening the game.
+- Localization updated.

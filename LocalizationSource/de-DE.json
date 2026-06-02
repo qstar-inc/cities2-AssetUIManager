@@ -1,12 +1,12 @@
 {
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "Fußgängerzonen In der Registerkarte {AssetUIManager.Replacement.Pathway}",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "Verschieben Sie alle **Fußgängerzonen** in die Registerkarte **{AssetUIManager.Replacement.Pathway}**.",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "Getrennte Registerkarten für Krankheitsbekämpfung und Gesundheitsforschung",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "Verschieben Sie **Zentren für Krankheitskontrolle** und **Gesundheitsforschungsinstitute** in eigene neue Registerkarten.",
   "AssetUIManager.Mod.XinXMenu_Label": "{1} Tab im {2} Menü",
   "AssetUIManager.Mod.XinXMenu_Desc": "Verschieben Sie die Registerkarten **{1}** in das Menü **{2}** statt in das Menü **{3}**.",
   "AssetUIManager.Mod.SeparatedTabs_Label": "Getrennte {1} Registerkarten",
   "AssetUIManager.Mod.SeparatedTabs_Desc": "Verschieben Sie alle **{1}** entsprechend ihrer Funktion in neue Registerkarten.",
   "AssetUIManager.Mod.SeparatedTabsInMenu_Label": "Getrennte {1} Registerkarten im {2} Menü",
-  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "Verschieben Sie alle **{1}** in einen neuen Reiter im Menü **{2}**.",
-  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "Fußgängerzonen In der Registerkarte {AssetUIManager.Replacement.Pathway}",
-  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "Verschieben Sie alle **Fußgängerzonen** in die Registerkarte **{AssetUIManager.Replacement.Pathway}**.",
-  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "Getrennte Registerkarten für Krankheitsbekämpfung und Gesundheitsforschung",
-  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "Verschieben Sie **Zentren für Krankheitskontrolle** und **Gesundheitsforschungsinstitute** in eigene neue Registerkarten."
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "Verschieben Sie alle **{1}** in einen neuen Reiter im Menü **{2}**."
 }

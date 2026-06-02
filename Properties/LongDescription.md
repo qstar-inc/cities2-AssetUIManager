@@ -1,7 +1,8 @@
 # Asset UI Manager
 Tired of scrolling the asset UI clogged with so many assets? Can't find the specific asset depo you're looking for? Then this is the second best option after Find It.
 
-Asset UI Manager can reposition elements in the ... Asset UI.
+Asset UI Manager can reposition elements in the vanilla Asset UI.
+
 ## Features
 * Move the Pathway tab to the Roads menu instead of Terraforming.
 * Move the Piers And Quay tab to the Roads menu instead of Terraforming.
@@ -10,20 +11,16 @@ Asset UI Manager can reposition elements in the ... Asset UI.
 * Move all Bridges to a new tab in the Roads Menu.
 * Move all Parking Roads to a new tab in the Roads Menu.
 * Move all Hospitals to new tabs according to its function.
-* Move all Schools to new tabs according to the Education Level. (Looking for icons)
-* Move all Polices to new tabs according to its function. (Looking for icons)
+* Move all Schools to new tabs according to the Education Level.
+* Move all Polices to new tabs according to its function.
 * Move all Pocket Parks to new tabs in the Parks &amp; Recreation menu.
 * Move all City Parks to new tabs in the Parks &amp; Recreation menu.
-* Add Base Game Asset Pack and Content (DLC Icon) for all base game assets. (uses icon from Unified Icon Library)
-* Add Asset Pack: Transport Depots, Transport Stops, Cargo Transport, Transport Lane, Bicycle Stop.
+* [Removed as of game version 1.5.9f1] ~~Add Base Game Asset Pack and Content (DLC Icon) for all base game assets.~~
+* [Removed as of game version 1.5.9f1] ~~Add Asset Pack: Transport Depots, Transport Stops, Cargo Transport, Transport Lane, Bicycle Stop.~~
 (All other **options** are __optional__ can be enabled and disabled on the fly. Disabling Asset Packs might require reloading the save.)
 * [Removed as of game version 1.3.3f1] ~~AUTO: Sort Asset UpgradesUI panel to sort the list in accordance to it's `m_Priority`.~~
-
-## Future Plans
-* Add props/assets to the menu which are not available in vanilla.
 
 ## Credits
 * irasponsible for feedback, testing and the Education icons.
 * Konsi/Mimonsi, GamingNerdLeith for feedback and testing.
 * Everyone else who participated in the beta testing of the mod in [Cities Skylines Modding](https://discord.com/channels/1024242828114673724/1315403052953505964) server.
-* 

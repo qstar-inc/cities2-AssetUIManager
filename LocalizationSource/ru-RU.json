@@ -1,12 +1,12 @@
 {
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "Pedestrian Streets In {AssetUIManager.Replacement.Pathway} tab",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "Move all **Pedestrian Streets** to the **{AssetUIManager.Replacement.Pathway}** tab.",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "Separated Disease Control and Health Research Tabs",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "Move **Disease Control Centers** and **Health Research Institutes** to own new tabs.",
   "AssetUIManager.Mod.XinXMenu_Label": "{1} tab in {2} menu",
   "AssetUIManager.Mod.XinXMenu_Desc": "Move the **{1}** tabs to the **{2}** menu instead of **{3}** menu.",
   "AssetUIManager.Mod.SeparatedTabs_Label": "Separated {1} tabs",
   "AssetUIManager.Mod.SeparatedTabs_Desc": "Move all **{1}** to new tabs according to its function.",
   "AssetUIManager.Mod.SeparatedTabsInMenu_Label": "Separated {1} tabs in {2} menu",
-  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "Move all **{1}** to a new tab in the **{2}** menu.",
-  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "Pedestrian Streets In {AssetUIManager.Replacement.Pathway} tab",
-  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "Move all **Pedestrian Streets** to the **{AssetUIManager.Replacement.Pathway}** tab.",
-  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "Separated Disease Control and Health Research Tabs",
-  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "Move **Disease Control Centers** and **Health Research Institutes** to own new tabs."
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "Move all **{1}** to a new tab in the **{2}** menu."
 }

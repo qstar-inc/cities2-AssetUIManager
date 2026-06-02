@@ -1,0 +1,67 @@
+{
+    "$id": 0,
+    "$type": "0|Game.Prefabs.ContentPrefab, Game",
+    "name": "Asset UI Manager",
+    "active": true,
+    "version": 1,
+    "components": {
+        "$id": 1,
+        "$type": "1|System.Collections.Generic.List`1[[Game.Prefabs.ComponentBase, Game]], mscorlib",
+        "$rlength": 3,
+        "$rcontent": [
+            {
+                "$id": 2,
+                "$type": "2|Game.Prefabs.DlcRequirement, Game",
+                "name": "DlcRequirement",
+                "active": true,
+                "m_Notes": "Base Game content",
+                "m_Dlc": {
+                    "$type": "3|Colossal.PSI.Common.DlcId, Colossal.PSI.Common",
+                    "id": -2009
+                },
+                "m_BaseGameRequiresDatabase": false
+            },
+            {
+                "$id": 3,
+                "$type": "4|Game.Prefabs.ObsoleteIdentifiers, Game",
+                "name": "ObsoleteIdentifiers",
+                "active": true,
+                "m_PrefabIdentifiers": {
+                    "$id": 4,
+                    "$type": "5|Game.Prefabs.PrefabIdentifierInfo[], Game",
+                    "$rlength": 1,
+                    "$rcontent": [
+                        {
+                            "$id": 5,
+                            "$type": "6|Game.Prefabs.PrefabIdentifierInfo, Game",
+                            "m_Name": "StarQ_CP BaseGame",
+                            "m_Type": "ContentPrefab",
+                            "m_Hash": null
+                        }
+                    ]
+                }
+            },
+            {
+                "$id": 6,
+                "$type": "7|Game.Prefabs.EditorAssetCategoryOverride, Game",
+                "name": "EditorAssetCategoryOverride",
+                "active": true,
+                "m_IncludeCategories": {
+                    "$id": 7,
+                    "$type": "8|System.String[], mscorlib",
+                    "$rlength": 1,
+                    "$rcontent": [
+                        "StarQ/_Utils/Asset UI Manager"
+                    ]
+                },
+                "m_ExcludeCategories": {
+                    "$id": 5,
+                    "$type": 4,
+                    "$rlength": 0,
+                    "$rcontent": [
+                    ]
+                }
+            }
+        ]
+    }
+}

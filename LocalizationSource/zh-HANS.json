@@ -1,12 +1,12 @@
 {
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "将步行街道放在 {AssetUIManager.Replacement.Pathway} 选项卡中",
+  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "将所有**步行街道**移动到**{AssetUIManager.Replacement.Pathway}**选项卡中。",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "分离疾病控制中心和健康研究所的选项卡",
+  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "将**疾病控制中心**和**健康研究所**移至新的标签页。",
   "AssetUIManager.Mod.XinXMenu_Label": "{2} 菜单中的 {1} 选项卡",
   "AssetUIManager.Mod.XinXMenu_Desc": "将**{1}**选项卡移至**{2}**菜单，以替换**{3}**菜单。",
   "AssetUIManager.Mod.SeparatedTabs_Label": "已分离 {1} 选项卡",
   "AssetUIManager.Mod.SeparatedTabs_Desc": "根据其功能将所有**{1}**移动到新选项卡。",
   "AssetUIManager.Mod.SeparatedTabsInMenu_Label": "{2} 菜单中的 {1} 选项卡已分离",
-  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "将所有**{1}**移至**{2}**菜单中的新选项卡。",
-  "AssetUIManager.StarQ_Option.PedestrianInPathway.Label": "将步行街道放在 {AssetUIManager.Replacement.Pathway} 选项卡中",
-  "AssetUIManager.StarQ_Option.PedestrianInPathway.Desc": "将所有**步行街道**移动到**{AssetUIManager.Replacement.Pathway}**选项卡中。",
-  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Label": "分离疾病控制中心和健康研究所的选项卡",
-  "AssetUIManager.StarQ_Option.SeparateControlAndResearch.Desc": "将**疾病控制中心**和**健康研究所**移至新的标签页。"
+  "AssetUIManager.Mod.SeparatedTabsInMenu_Desc": "将所有**{1}**移至**{2}**菜单中的新选项卡。"
 }
