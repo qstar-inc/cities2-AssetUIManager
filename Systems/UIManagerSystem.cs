@@ -8,6 +8,7 @@ using Game.Prefabs;
 using StarQ.Shared.Extensions;
 using Unity.Collections;
 using Unity.Entities;
+using static Colossal.AssetPipeline.Diagnostic.Report;
 
 namespace AssetUIManager.Systems
 {
@@ -780,19 +781,19 @@ namespace AssetUIManager.Systems
                         bool isValid = false;
 
                         if (
-                            content.Name == "PiersAndQuays"
-                            || content.Name == "StarQ AUM UIC RoadsBridges"
+                            content.Name == AUM_Contents.PiersAndQuays.Name
+                            || content.Name == AUM_Contents.RoadsBridges.Name
                         )
                         {
                             assetPrefabBase.TryGet(out Bridge bridgeData);
                             if (
                                 bridgeData.m_BuildStyle == BridgeBuildStyle.Quay
-                                && content.Name == "PiersAndQuays"
+                                && content.Name == AUM_Contents.PiersAndQuays.Name
                             )
                                 isValid = true;
                             else if (
                                 bridgeData.m_BuildStyle != BridgeBuildStyle.Quay
-                                && content.Name == "StarQ AUM UIC RoadsBridges"
+                                && content.Name == AUM_Contents.RoadsBridges.Name
                             )
                                 isValid = true;
                             else
@@ -1027,38 +1028,71 @@ namespace AssetUIManager.Systems
             Entity moverEntity
         )
         {
-            DynamicBuffer<UIGroupElement> uiGroupElementbuffer =
-                EntityManager.GetBuffer<UIGroupElement>(oldCat);
+            if (!EntityManager.Exists(oldCat) || !EntityManager.Exists(newCat))
+                return;
 
-            for (int i = 0; i < uiGroupElementbuffer.Length; i++)
+            if (!EntityManager.HasBuffer<UIGroupElement>(oldCat))
+                return;
+
+            DynamicBuffer<UIGroupElement> oldBuffer = EntityManager.GetBuffer<UIGroupElement>(
+                oldCat
+            );
+
+            for (int i = oldBuffer.Length - 1; i >= 0; i--)
             {
-                var uge = uiGroupElementbuffer[i].m_Prefab;
-                var tabName = prefabSystem.GetPrefabName(uge);
-                if (tabName == moverName)
+                Entity prefab = oldBuffer[i].m_Prefab;
+                if (!EntityManager.Exists(prefab))
+                    continue;
+                if (prefabSystem.GetPrefabName(prefab) == moverName)
                 {
-                    uiGroupElementbuffer.RemoveAt(i);
+                    oldBuffer.RemoveAt(i);
                     break;
                 }
             }
 
-            EntityManager.GetBuffer<UIGroupElement>(newCat).Add(new UIGroupElement(moverEntity));
-            EntityManager
-                .GetBuffer<UnlockRequirement>(newCat)
-                .Add(new UnlockRequirement(moverEntity, UnlockFlags.RequireAny));
+            DynamicBuffer<UIGroupElement> newBuffer = EntityManager.GetBuffer<UIGroupElement>(
+                newCat
+            );
+
+            bool alreadyExists = false;
+            for (int i = 0; i < newBuffer.Length; i++)
+            {
+                if (newBuffer[i].m_Prefab == moverEntity)
+                {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (!alreadyExists)
+            {
+                newBuffer.Add(new UIGroupElement(moverEntity));
+
+                if (EntityManager.HasBuffer<UnlockRequirement>(newCat))
+                    EntityManager
+                        .GetBuffer<UnlockRequirement>(newCat)
+                        .Add(new UnlockRequirement(moverEntity, UnlockFlags.RequireAny));
+            }
         }
 
         private void RefreshBuffer(Entity oldCat, string moverName)
         {
-            DynamicBuffer<UIGroupElement> uiGroupElementbuffer =
-                EntityManager.GetBuffer<UIGroupElement>(oldCat);
+            if (!EntityManager.Exists(oldCat))
+                return;
 
-            for (int i = uiGroupElementbuffer.Length - 1; i >= 0; i--)
+            if (!EntityManager.HasBuffer<UIGroupElement>(oldCat))
+                return;
+
+            DynamicBuffer<UIGroupElement> buffer = EntityManager.GetBuffer<UIGroupElement>(oldCat);
+
+            for (int i = buffer.Length - 1; i >= 0; i--)
             {
-                var uge = uiGroupElementbuffer[i].m_Prefab;
-                var ugi = prefabSystem.GetPrefabName(uge);
-                if (ugi == moverName)
+                Entity prefab = buffer[i].m_Prefab;
+                if (!EntityManager.Exists(prefab))
+                    continue;
+                if (prefabSystem.GetPrefabName(prefab) == moverName)
                 {
-                    uiGroupElementbuffer.RemoveAt(i);
+                    buffer.RemoveAt(i);
                     break;
                 }
             }
@@ -1066,7 +1100,7 @@ namespace AssetUIManager.Systems
 
         private void CleanUpServiceUpgrade()
         {
-            var serviceUpgQuery = SystemAPI
+            EntityQuery serviceUpgQuery = SystemAPI
                 .QueryBuilder()
                 .WithAll<ServiceUpgradeData, UIObjectData>()
                 .Build();

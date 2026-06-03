@@ -1,2 +1,1 @@
-- Fixed error on opening the Editor right after opening the game.
-- Localization updated.
+- Potential fix for random error on save load.

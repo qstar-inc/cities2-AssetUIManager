@@ -37,10 +37,9 @@ Asset UI Manager can reposition elements in the vanilla Asset UI.
   <Screenshot Value="Properties/Screenshot06.png" />
   <Tag Value="Code Mod" />
   <ForumLink Value="" />
-  <ModVersion Value="1.4.2" />
+  <ModVersion Value="1.4.3" />
   <GameVersion Value="1.5*" />
-  <ChangeLog>- Fixed error on opening the Editor right after opening the game.
-- Localization updated.</ChangeLog>
+  <ChangeLog>- Potential fix for random error on save load.</ChangeLog>
   <ExternalLink Type="discord" Url="https://discord.gg/U2PSjUzUuF" />
   <ExternalLink Type="buymeacoffee" Url="https://buymeacoffee.com/starq" />
   <ExternalLink Type="github" Url="https://github.com/qstar-inc/cities2-AssetUIManager" />
