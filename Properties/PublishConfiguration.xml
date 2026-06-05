@@ -37,9 +37,9 @@ Asset UI Manager can reposition elements in the vanilla Asset UI.
   <Screenshot Value="Properties/Screenshot06.png" />
   <Tag Value="Code Mod" />
   <ForumLink Value="" />
-  <ModVersion Value="1.4.3" />
+  <ModVersion Value="1.4.4" />
   <GameVersion Value="1.5*" />
-  <ChangeLog>- Potential fix for random error on save load.</ChangeLog>
+  <ChangeLog>- Mod is apparently haunted, being automatically removed from the playsets. Don't know why, but just posting this update in case this moves some needle somewhere to make it work as expected. No major code changes.</ChangeLog>
   <ExternalLink Type="discord" Url="https://discord.gg/U2PSjUzUuF" />
   <ExternalLink Type="buymeacoffee" Url="https://buymeacoffee.com/starq" />
   <ExternalLink Type="github" Url="https://github.com/qstar-inc/cities2-AssetUIManager" />

@@ -8,7 +8,6 @@ using Game.Prefabs;
 using StarQ.Shared.Extensions;
 using Unity.Collections;
 using Unity.Entities;
-using static Colossal.AssetPipeline.Diagnostic.Report;
 
 namespace AssetUIManager.Systems
 {
@@ -114,13 +113,22 @@ namespace AssetUIManager.Systems
             }
 
             if (!ContentSystem.EntitiesAssigned)
+                ContentSystem.AssignEntities();
+
+            if (
+                LogHelper.CheckNull(
+                    Mod.m_Setting,
+                    "Mod setting is null, skipping UI refresh",
+                    level: LogLevel.Info
+                )
+            )
+                return;
+
+            if (!NeedUpdate)
             {
-                LogHelper.SendLog("Entities not assigned yet, skipping UI refresh");
+                LogHelper.SendLog("No changes detected, skipping UI refresh", LogLevel.DEVD);
                 return;
             }
-
-            if (Mod.m_Setting == null || !NeedUpdate)
-                return;
 
             //log = Mod.m_Setting.VerboseLogging;
 

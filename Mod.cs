@@ -4,10 +4,8 @@ using System.Reflection;
 using AssetUIManager.Systems;
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
-using Colossal.UI;
 using Game;
 using Game.Modding;
-using Game.SceneFlow;
 using StarQ.Shared.Extensions;
 using Unity.Entities;
 
@@ -43,9 +41,8 @@ namespace AssetUIManager
             m_Setting.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(AssetUIManager), m_Setting, new Setting(this));
 
-            updateSystem.UpdateAfter<ContentSystem>(SystemUpdatePhase.PrefabUpdate);
             //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<DataCollectionSystem>();
-            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ContentSystem>();
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ContentSystem>();
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
             //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
         }

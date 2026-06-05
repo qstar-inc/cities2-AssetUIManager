@@ -233,12 +233,12 @@ namespace AssetUIManager.Systems
     {
         internal static bool EntitiesAssigned = false;
 
-        protected override void OnGamePreload(Purpose purpose, GameMode mode)
-        {
-            base.OnGamePreload(purpose, mode);
-            if (!EntitiesAssigned)
-                AssignEntities();
-        }
+        //protected override void OnGamePreload(Purpose purpose, GameMode mode)
+        //{
+        //    base.OnGamePreload(purpose, mode);
+        //    if (!EntitiesAssigned)
+        //        AssignEntities();
+        //}
 
         protected override void OnUpdate()
         {
@@ -246,7 +246,7 @@ namespace AssetUIManager.Systems
             AssignEntities();
         }
 
-        public void AssignEntities()
+        public static void AssignEntities()
         {
             foreach (AUM_Content item in AUM_Contents.All)
             {
