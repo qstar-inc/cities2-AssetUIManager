@@ -7,7 +7,6 @@ using Colossal.Logging;
 using Game;
 using Game.Modding;
 using StarQ.Shared.Extensions;
-using Unity.Entities;
 
 namespace AssetUIManager
 {
@@ -26,40 +25,24 @@ namespace AssetUIManager
         public static ILog log = LogManager.GetLogger($"{Id}").SetShowsErrorsInUI(false);
         public static Setting m_Setting;
 
-        //public static string uiHostName = "starq-asset-ui-manager";
-
         public void OnLoad(UpdateSystem updateSystem)
         {
             LogHelper.Init(Id, log);
             LocaleHelper.Init(Id, Name, GetReplacements, AddLocale);
-            //UIHostHelper.Init(Id, uiHostName);
-
-            //if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
-            //    UIHostHelper.LoadUIHost(asset);
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(AssetUIManager), m_Setting, new Setting(this));
 
-            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<DataCollectionSystem>();
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ContentSystem>();
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UIManagerSystem>();
-            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AssetPackSystem>();
+            WorldHelper.GetSystem<ContentSystem>();
+            WorldHelper.GetSystem<UIManagerSystem>();
         }
 
         public void OnDispose()
         {
-            //    if (DataCollectionSystem.assetMenuDataDict.IsCreated)
-            //        DataCollectionSystem.assetMenuDataDict.Dispose();
-            //    if (DataCollectionSystem.assetCatDataDict.IsCreated)
-            //        DataCollectionSystem.assetCatDataDict.Dispose();
-            //log.Info(nameof(OnDispose));
-            if (m_Setting != null)
-            {
-                m_Setting.UnregisterInOptionsUI();
-                m_Setting = null;
-            }
-            //UIManager.defaultUISystem.RemoveHostLocation(uiHostName);
+            LocaleHelper.Dispose();
+            m_Setting?.UnregisterInOptionsUI();
+            m_Setting = null;
         }
 
         public static Dictionary<string, string> GetReplacements()

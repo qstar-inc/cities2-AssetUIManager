@@ -1,4 +1,6 @@
 # Asset UI Manager
+Reorganize the asset UI panel in an orderly manner
+
 Tired of scrolling the asset UI clogged with so many assets? Can't find the specific asset depo you're looking for? Then this is the second best option after Find It.
 
 Asset UI Manager can reposition elements in the vanilla Asset UI.
@@ -23,4 +25,4 @@ Asset UI Manager can reposition elements in the vanilla Asset UI.
 ## Credits
 * irasponsible for feedback, testing and the Education icons.
 * Konsi/Mimonsi, GamingNerdLeith for feedback and testing.
-* Everyone else who participated in the beta testing of the mod in [Cities Skylines Modding](https://discord.com/channels/1024242828114673724/1315403052953505964) server.
+* Everyone else who participated in the beta testing of the mod in [Cities Skylines Modding](https://discord.com/channels/1024242828114673724/1518565970682052628) server.

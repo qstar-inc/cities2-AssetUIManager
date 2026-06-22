@@ -3,7 +3,9 @@
     <Configurations>Debug;Release</Configurations>
     <AssemblyName>AssetUIManager</AssemblyName>
     <AssemblyTitle>Asset UI Manager</AssemblyTitle>
-    <Version>1.4.4</Version>
+    <Version>1.4.5</Version>
+    <GameVersion>$(CS2_GAMEVERSION)</GameVersion>
+    <ForumLink>$(CS2_FORUMLINK)</ForumLink>
     <Authors>StarQ</Authors>
     <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
     <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
@@ -23,6 +25,9 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="Colossal.PSI.PdxSdk">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
       <Private>false</Private>
     </Reference>
     <Reference Include="PDX.SDK">
@@ -118,6 +123,16 @@
       XmlInputPath="$(PublishConfigurationPath)"
       Value="$(Version)"
       Query="//ModVersion/@Value"
+    />
+    <XmlPoke
+      XmlInputPath="$(PublishConfigurationPath)"
+      Value="$(GameVersion)"
+      Query="//GameVersion/@Value"
+    />
+    <XmlPoke
+      XmlInputPath="$(PublishConfigurationPath)"
+      Value="$(ForumLink)"
+      Query="//ForumLink/@Value"
     />
   </Target>
 </Project>

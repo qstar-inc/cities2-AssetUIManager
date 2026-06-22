@@ -1,8 +1,10 @@
 <Publish>
   <ModId Value="98560" />
   <DisplayName Value="Asset UI Manager" />
-  <ShortDescription Value="Move/split/add/sort various assets in the asset UI in an orderly manner." />
+  <ShortDescription Value="Reorganize the asset UI panel in an orderly manner" />
   <LongDescription># Asset UI Manager
+Reorganize the asset UI panel in an orderly manner
+
 Tired of scrolling the asset UI clogged with so many assets? Can't find the specific asset depo you're looking for? Then this is the second best option after Find It.
 
 Asset UI Manager can reposition elements in the vanilla Asset UI.
@@ -27,7 +29,7 @@ Asset UI Manager can reposition elements in the vanilla Asset UI.
 ## Credits
 * irasponsible for feedback, testing and the Education icons.
 * Konsi/Mimonsi, GamingNerdLeith for feedback and testing.
-* Everyone else who participated in the beta testing of the mod in [Cities Skylines Modding](https://discord.com/channels/1024242828114673724/1315403052953505964) server.</LongDescription>
+* Everyone else who participated in the beta testing of the mod in [Cities Skylines Modding](https://discord.com/channels/1024242828114673724/1518565970682052628) server.</LongDescription>
   <Thumbnail Value="Properties/Thumbnail.png" />
   <Screenshot Value="Properties/Screenshot01.png" />
   <Screenshot Value="Properties/Screenshot02.png" />
@@ -36,10 +38,11 @@ Asset UI Manager can reposition elements in the vanilla Asset UI.
   <!--Screenshot Value="Properties/Screenshot05.png" /-->
   <Screenshot Value="Properties/Screenshot06.png" />
   <Tag Value="Code Mod" />
-  <ForumLink Value="" />
-  <ModVersion Value="1.4.4" />
-  <GameVersion Value="1.5*" />
-  <ChangeLog>- Mod is apparently haunted, being automatically removed from the playsets. Don't know why, but just posting this update in case this moves some needle somewhere to make it work as expected. No major code changes.</ChangeLog>
+  <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/starq-mods-assets-projects-megathread.1930389/" />
+  <ModVersion Value="1.4.5" />
+  <GameVersion Value="1.6.0*" />
+  <ChangeLog>- No major code changes. Recent Skyve update that came with Summer Solistice (1.6.0f1) patch should fix the random unsubscribe issue.
+- Minor code cleanup.</ChangeLog>
   <ExternalLink Type="discord" Url="https://discord.gg/U2PSjUzUuF" />
   <ExternalLink Type="buymeacoffee" Url="https://buymeacoffee.com/starq" />
   <ExternalLink Type="github" Url="https://github.com/qstar-inc/cities2-AssetUIManager" />

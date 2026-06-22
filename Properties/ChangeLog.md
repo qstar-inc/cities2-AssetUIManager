@@ -1,1 +1,2 @@
-- Mod is apparently haunted, being automatically removed from the playsets. Don't know why, but just posting this update in case this moves some needle somewhere to make it work as expected. No major code changes.
+- No major code changes. Recent Skyve update that came with Summer Solistice (1.6.0f1) patch should fix the random unsubscribe issue.
+- Minor code cleanup.
